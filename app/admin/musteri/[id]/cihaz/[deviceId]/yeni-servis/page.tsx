@@ -127,20 +127,30 @@ export default function YeniServisKaydi() {
 
       await supabase.from('service_records').update({ pdf_url: publicPdfUrl }).eq('id', recordData.id);
 
-      // 5. ADIM: WHATSAPP LOJİSTİĞİ
-      // Numaradaki boşlukları ve başındaki 0'ı temizleyip uluslararası formata (90) getiriyoruz
-      let cleanPhone = customer.phone_number.replace(/\D/g, '');
+     // 5. ADIM: WHATSAPP LOJİSTİĞİ
+      let rawPhone = customer?.phone_number || '';
+      let cleanPhone = rawPhone.replace(/\D/g, ''); // Sadece rakamları ayıkla
+      
+      // Başında 0 varsa temizle
       if (cleanPhone.startsWith('0')) cleanPhone = cleanPhone.substring(1);
-      if (!cleanPhone.startsWith('90')) cleanPhone = '90' + cleanPhone;
+      
+      // Ülke kodu 90 yoksa ekle
+      if (!cleanPhone.startsWith('90') && cleanPhone.length > 0) {
+        cleanPhone = '90' + cleanPhone;
+      }
 
+      // Türkiye'de numaralar 90 ile birlikte toplam 12 hanedir. Eğer 12'den kısaysa, numara sahte/eksiktir.
+      if (cleanPhone.length < 12) {
+         alert('İşlem Başarılı: Servis kaydedildi ve PDF depoya yüklendi!\n\nAncak müşterinin geçerli bir telefon numarası olmadığı için WhatsApp yönlendirmesi atlandı.');
+         router.push(`/admin/musteri/${id}`);
+         return; // Algoritmayı burada durdur
+      }
+
+      // Numara doğruysa WhatsApp'ı tetikle
       const waMessage = tr2en(`Merhaba ${customer.full_name}, ${device.brand} cihazinizin servis islemi tamamlanmistir. Detayli servis formunuza ve faturaniza bu linkten ulasabilirsiniz: `) + publicPdfUrl;
       const waLink = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(waMessage)}`;
 
-
-      // ÇÖZÜM: Yeni sekme (pop-up) açmak yerine, doğrudan cihazın WhatsApp uygulamasını tetikleyen Deep-Link yönlendirmesi yapıyoruz.
-      // Not: Yönlendirme yapıldığı için router.push kullanmıyoruz, kullanıcı işlem bitince WhatsApp'a geçmiş olacak.
       window.location.href = waLink;
-      
 
     } catch (err: any) {
       alert("Operasyon sırasında hata: " + err.message);
