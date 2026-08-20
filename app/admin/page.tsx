@@ -75,26 +75,43 @@ export default function KontrolMerkezi() {
           <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200"><p className="text-sm font-bold text-slate-500 uppercase">Servisler</p><p className="text-3xl font-extrabold text-emerald-600">{stats.services}</p></div>
         </div>
 
-        {/* YAKLAŞAN SERVİSLER MODÜLÜ */}
+       {/* YAKLAŞAN SERVİSLER MODÜLÜ */}
         <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden mt-6">
           <div className="p-5 border-b border-slate-100 bg-slate-50 flex justify-between items-center">
-            <h2 className="text-lg font-bold text-slate-800">Yaklaşan Servisler / Cihazlar</h2>
+            <h2 className="text-lg font-bold text-slate-800">Yaklaşan Servisler (Sonraki 10 Gün)</h2>
           </div>
           <div className="flex flex-col divide-y divide-slate-100">
-            {upcomingServices.map((device) => (
-              <div key={device.id} className="p-4 flex flex-col md:flex-row justify-between items-start md:items-center hover:bg-slate-50">
-                <div className="mb-2 md:mb-0">
-                  <h3 className="font-bold text-slate-800">{device.customers?.full_name || 'Bilinmiyor'}</h3>
-                  <p className="text-sm text-slate-500">{device.brand} - {device.device_type}</p>
+            {upcomingServices.map((record) => {
+              // Yeni JSON hiyerarşisine göre veriyi doğru değişkenlere atıyoruz
+              const device = record.devices;
+              const customer = device?.customers;
+              const bakımTarihi = new Date(record.next_maintenance_date).toLocaleDateString('tr-TR');
+
+              return (
+                <div key={record.id} className="p-4 flex flex-col md:flex-row justify-between items-start md:items-center hover:bg-slate-50 transition-colors">
+                  <div className="mb-3 md:mb-0">
+                    <h3 className="font-bold text-slate-800 text-lg">{customer?.full_name || 'Bilinmiyor'}</h3>
+                    <p className="text-sm text-slate-600 mt-1">
+                      {device?.brand} - {device?.device_type}
+                    </p>
+                    <div className="mt-2 inline-block bg-red-50 text-red-700 px-2 py-1 rounded text-xs font-bold border border-red-100">
+                      Bakım: {bakımTarihi}
+                    </div>
+                  </div>
+                  <div className="flex gap-2 w-full md:w-auto">
+                    {/* Cihazın customer_id'si üzerinden doğru profile yönlendiriyoruz */}
+                    <Link href={`/admin/musteri/${device?.customer_id}`} className="flex-1 md:flex-none text-center bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 px-4 py-2.5 rounded-lg text-sm font-bold transition-colors shadow-sm">
+                      Profile Git &rarr;
+                    </Link>
+                  </div>
                 </div>
-                <div className="flex gap-2 w-full md:w-auto">
-                  <Link href={`/admin/musteri/${device.customer_id}`} className="flex-1 md:flex-none text-center bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 py-2 rounded-lg text-xs font-bold transition-colors">
-                    Profile Git
-                  </Link>
-                </div>
+              );
+            })}
+            {upcomingServices.length === 0 && (
+              <div className="p-8 text-center bg-slate-50">
+                <p className="font-bold text-slate-500">Önümüzdeki 10 gün içinde yaklaşan servis kaydı yok.</p>
               </div>
-            ))}
-            {upcomingServices.length === 0 && <div className="p-6 text-center font-bold text-slate-500">Yaklaşan servis kaydı yok.</div>}
+            )}
           </div>
         </div>
 
