@@ -201,9 +201,11 @@ export default function YeniMusteriEkle() {
                   value={deviceData.device_type} onChange={(e) => setDeviceData({...deviceData, device_type: e.target.value})}>
                   <option value="Klima">Klima</option>
                   <option value="Kombi">Kombi</option>
-                  <option value="Havalandırma">Havalandırma Sistemi</option>
                   <option value="Soğuk Oda">Soğuk Oda Motoru</option>
-                </select>
+                  <option value="VRF Tipi Klima">VRF Tipi Klima</option>
+                  <option value="Salon Tipi Klima">Salon Tipi Klima</option>
+                  <option value="Petek">Petek</option>    
+                </select>    
               </div>
               <div>
                 <label className="block text-sm font-bold text-slate-700 mb-1">Marka</label>

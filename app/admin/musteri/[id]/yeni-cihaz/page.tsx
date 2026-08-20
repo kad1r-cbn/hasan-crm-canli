@@ -107,7 +107,9 @@ export default function YeniCihazVeServisEkle({ params }: { params: Promise<{ id
                   value={deviceData.device_type} onChange={(e) => setDeviceData({...deviceData, device_type: e.target.value})}>
                   <option value="Klima">Klima</option>
                   <option value="Kombi">Kombi</option>
-                  <option value="Havalandırma">Havalandırma</option>
+                  <option value="VRF Tipi Klima">VRF Tipi Klima</option>
+                  <option value="Salon Tipi Klima">Salon Tipi Klima</option>
+                  <option value="Petek">Petek</option>
                 </select>
               </div>
               <div>
