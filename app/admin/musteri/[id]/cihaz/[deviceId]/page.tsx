@@ -60,10 +60,29 @@ export default async function CihazGecmisi({ params }: any) {
                       <p className="text-xs text-slate-400 font-bold uppercase mb-1">İşlem Tarihi</p>
                       <p className="font-bold text-slate-800 text-lg">{new Date(service.service_date).toLocaleDateString('tr-TR')}</p>
                     </div>
-                    <div className="text-right">
+                    <div className="flex justify-between items-start border-b border-slate-100 pb-3 mb-3">
+                    <div>
+                      <p className="text-xs text-slate-400 font-bold uppercase mb-1">İşlem Tarihi</p>
+                      <p className="font-bold text-slate-800 text-lg">{new Date(service.service_date).toLocaleDateString('tr-TR')}</p>
+                    </div>
+                    {/* ÜCRET VE PDF BUTONU HİZALAMASI */}
+                    <div className="text-right flex flex-col items-end">
                       <p className="text-xs text-slate-400 font-bold uppercase mb-1">Ücret</p>
                       <p className="font-bold text-emerald-600 text-lg">{service.price ? `${service.price} ₺` : 'Ücretsiz'}</p>
+                      
+                      {/* Veritabanında pdf_url varsa bu butonu göster */}
+                      {service.pdf_url && (
+                        <a 
+                          href={service.pdf_url} 
+                          target="_blank" 
+                          rel="noopener noreferrer" 
+                          className="mt-2 bg-slate-100 hover:bg-slate-200 text-slate-600 hover:text-slate-900 border border-slate-200 px-3 py-1.5 rounded text-xs font-bold transition-colors shadow-sm inline-flex items-center"
+                        >
+                          📄 PDF Formu
+                        </a>
+                      )}
                     </div>
+                  </div>
                   </div>
                   <p className="text-slate-700 text-sm leading-relaxed mb-4">{service.description}</p>
                   <div className="bg-red-50 border border-red-100 text-red-700 p-3 rounded-lg text-sm flex justify-between items-center">

@@ -204,7 +204,7 @@ export default function YeniMusteriEkle() {
                   <option value="Soğuk Oda">Soğuk Oda Motoru</option>
                   <option value="VRF Tipi Klima">VRF Tipi Klima</option>
                   <option value="Salon Tipi Klima">Salon Tipi Klima</option>
-                  <option value="Petek">Petek</option>    
+                  <option value="Petek">Petek</option>
                 </select>    
               </div>
               <div>
