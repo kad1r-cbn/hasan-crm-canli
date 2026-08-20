@@ -136,11 +136,11 @@ export default function YeniServisKaydi() {
       const waMessage = tr2en(`Merhaba ${customer.full_name}, ${device.brand} cihazinizin servis islemi tamamlanmistir. Detayli servis formunuza ve faturaniza bu linkten ulasabilirsiniz: `) + publicPdfUrl;
       const waLink = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(waMessage)}`;
 
-      // WhatsApp'ı yeni sekmede aç
-      window.open(waLink, '_blank');
+
+      // ÇÖZÜM: Yeni sekme (pop-up) açmak yerine, doğrudan cihazın WhatsApp uygulamasını tetikleyen Deep-Link yönlendirmesi yapıyoruz.
+      // Not: Yönlendirme yapıldığı için router.push kullanmıyoruz, kullanıcı işlem bitince WhatsApp'a geçmiş olacak.
+      window.location.href = waLink;
       
-      // Kullanıcıyı müşteri sayfasına geri yolla
-      router.push(`/admin/musteri/${id}`);
 
     } catch (err: any) {
       alert("Operasyon sırasında hata: " + err.message);
