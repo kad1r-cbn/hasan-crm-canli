@@ -28,19 +28,31 @@ export default function KontrolMerkezi() {
         services: serviceCount || 0
       });
 
-      // 2. Yaklaşan Servisleri Çek (Örnek: Son eklenen veya bakımı yaklaşan cihazlar üzerinden)
-      // NOT: Veritabanındaki mantığına göre buradaki 'devices' veya 'service_records' sorgusunu kendi kolonlarına göre adapte et.
+      // 2. 10 Günlük Zaman Penceresi Hesaplama
+      const today = new Date();
+      const next10Days = new Date();
+      next10Days.setDate(today.getDate() + 10);
+      
+      // Tarihleri YYYY-MM-DD formatına çevir (Supabase'in okuyabileceği format)
+      const todayStr = today.toISOString().split('T')[0];
+      const next10DaysStr = next10Days.toISOString().split('T')[0];
+
+      // 3. Yaklaşan Servisleri Çek (Sadece bugünden itibaren 10 gün içinde olanlar)
       const { data: upcoming } = await supabase
-        .from('devices')
+        .from('service_records')
         .select(`
-          *,
-          customers (
-            full_name,
-            phone_number
+          id,
+          next_maintenance_date,
+          devices (
+            brand,
+            device_type,
+            customer_id,
+            customers ( full_name, phone_number )
           )
         `)
-        .order('created_at', { ascending: false }) // Eğer next_maintenance_date kolonun varsa burayı ona göre değiştir
-        .limit(5);
+        .gte('next_maintenance_date', todayStr)
+        .lte('next_maintenance_date', next10DaysStr)
+        .order('next_maintenance_date', { ascending: true });
 
       if (upcoming) setUpcomingServices(upcoming);
       setLoading(false);
