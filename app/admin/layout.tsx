@@ -46,7 +46,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
            <button onClick={() => setIsMobileMenuOpen(true)} className="mr-4 text-slate-300 hover:text-white focus:outline-none">
              <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
            </button>
-           <h2 className="text-xl font-extrabold tracking-tight">Hasan<span className="text-cyan-500">CRM</span></h2>
+           <h2 className="text-xl font-extrabold tracking-tight">Vora<span className="text-cyan-500">CRM</span></h2>
          </div>
       </header>
 
