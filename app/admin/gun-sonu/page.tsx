@@ -143,14 +143,33 @@ export default function GunSonuPage() {
     <div className="min-h-screen bg-slate-100 p-6 font-sans flex justify-center items-start">
       <div className="w-full max-w-4xl bg-slate-900 rounded-2xl shadow-2xl border border-slate-800 overflow-hidden mt-10">
         
-        {/* Takvim Başlığı */}
+       {/* Takvim Başlığı (Rasyonel Filtreleme) */}
         <div className="flex justify-between items-center p-6 border-b border-slate-800">
-          <h2 className="text-2xl font-bold text-white">
-            {monthNames[currentDate.getMonth()]} {currentDate.getFullYear()}
-          </h2>
+          <div className="flex gap-3">
+            {/* Ay Seçici */}
+            <select 
+              value={currentDate.getMonth()}
+              onChange={(e) => setCurrentDate(new Date(currentDate.getFullYear(), parseInt(e.target.value), 1))}
+              className="bg-slate-800 text-white font-bold py-2 px-3 rounded-lg outline-none border border-slate-700 focus:border-cyan-500 cursor-pointer appearance-none"
+            >
+              {monthNames.map((m, i) => <option key={i} value={i}>{m}</option>)}
+            </select>
+            
+            {/* Yıl Seçici (Geçmiş 5, Gelecek 5 Yıl) */}
+            <select 
+              value={currentDate.getFullYear()}
+              onChange={(e) => setCurrentDate(new Date(parseInt(e.target.value), currentDate.getMonth(), 1))}
+              className="bg-slate-800 text-white font-bold py-2 px-3 rounded-lg outline-none border border-slate-700 focus:border-cyan-500 cursor-pointer appearance-none"
+            >
+              {Array.from({length: 11}, (_, i) => new Date().getFullYear() - 5 + i).map(y => (
+                <option key={y} value={y}>{y}</option>
+              ))}
+            </select>
+          </div>
+          
           <div className="flex gap-2">
-            <button onClick={prevMonth} className="p-2 bg-slate-800 text-slate-300 hover:text-white rounded-lg transition-colors">◀</button>
-            <button onClick={nextMonth} className="p-2 bg-slate-800 text-slate-300 hover:text-white rounded-lg transition-colors">▶</button>
+            <button onClick={prevMonth} className="p-2 bg-slate-800 text-slate-300 hover:text-white rounded-lg transition-colors shadow-sm">◀</button>
+            <button onClick={nextMonth} className="p-2 bg-slate-800 text-slate-300 hover:text-white rounded-lg transition-colors shadow-sm">▶</button>
           </div>
         </div>
 
