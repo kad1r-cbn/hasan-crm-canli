@@ -148,12 +148,16 @@ export default function KontrolMerkezi() {
                       Profile Git &rarr;
                     </Link>
 
-                    {/* Rasyonel Buton Lojistiği */}
+                    {/* RASYONEL BUTON LOJİSTİĞİ */}
                     {record.reminder_sent ? (
-                      <div className="flex-1 md:flex-none flex items-center justify-center gap-1 bg-emerald-50 border border-emerald-200 text-emerald-700 px-4 py-2.5 rounded-lg text-sm font-bold cursor-default">
+                      <button 
+                        onClick={() => handleSendReminder(record.id, customer?.phone_number, customer?.full_name, device?.brand)}
+                        className="flex-1 md:flex-none flex items-center justify-center gap-1 bg-emerald-50 hover:bg-emerald-100 border border-emerald-300 text-emerald-700 px-4 py-2.5 rounded-lg text-sm font-bold transition-colors shadow-sm"
+                        title="Mesajı Tekrar Gönder"
+                      >
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path></svg>
-                        İletildi
-                      </div>
+                        İletildi (Tekrar)
+                      </button>
                     ) : (
                       <button 
                         onClick={() => handleSendReminder(record.id, customer?.phone_number, customer?.full_name, device?.brand)}
