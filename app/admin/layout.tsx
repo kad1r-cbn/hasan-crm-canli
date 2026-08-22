@@ -25,14 +25,15 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       {/* 1. MASAÜSTÜ SOL MENÜ (Mobilde gizlenir) */}
       <aside className="hidden md:flex w-64 flex-shrink-0 bg-slate-900 text-slate-300 flex-col shadow-2xl z-10">
         <div className="p-6 border-b border-slate-800">
-          <h2 className="text-2xl font-extrabold text-white tracking-tight">Hasan<span className="text-cyan-500">CRM</span></h2>
+          <h2 className="text-2xl font-extrabold text-white tracking-tight">Vora<span className="text-cyan-500">CRM</span></h2>
         </div>
         <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
           <Link href="/admin" className={`block px-4 py-3 rounded-lg font-bold transition-all ${isActive('/admin') ? 'bg-cyan-600 text-white' : 'hover:bg-slate-800 hover:text-white'}`}>Kontrol Merkezi</Link>
           <Link href="/admin/musteriler" className={`block px-4 py-3 rounded-lg font-bold transition-all ${isActive('/admin/musteriler') ? 'bg-cyan-600 text-white' : 'hover:bg-slate-800 hover:text-white'}`}>Müşteriler</Link>
           <Link href="/admin/yeni-kayit" className={`block px-4 py-3 rounded-lg font-bold transition-all ${isActive('/admin/yeni-kayit') ? 'bg-cyan-600 text-white' : 'hover:bg-slate-800 hover:text-white'}`}>+ Hızlı Kayıt</Link>
-          <Link href="/admin/ayarlar" className={`block px-4 py-3 rounded-lg font-bold transition-all ${isActive('/admin/ayarlar') ? 'bg-cyan-600 text-white' : 'hover:bg-slate-800 hover:text-white'}`}>Ayarlar</Link>
           <Link href="/admin/gun-sonu" className={`block px-4 py-3 rounded-lg font-bold transition-all ${isActive('/admin/gun-sonu') ? 'bg-cyan-600 text-white' : 'hover:bg-slate-800 hover:text-white'}`}>Gün Sonu</Link>
+          <Link href="/admin/ayarlar" className={`block px-4 py-3 rounded-lg font-bold transition-all ${isActive('/admin/ayarlar') ? 'bg-cyan-600 text-white' : 'hover:bg-slate-800 hover:text-white'}`}>Ayarlar</Link>
+          
         </nav>
         <div className="p-4 border-t border-slate-800">
           <button onClick={handleLogout} className="w-full bg-slate-800 hover:bg-red-600 text-slate-300 hover:text-white px-4 py-3 rounded-lg font-bold transition-all">Çıkış Yap</button>
@@ -67,8 +68,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               <Link href="/admin" onClick={closeMenu} className={`block px-4 py-3 rounded-lg font-bold ${isActive('/admin') ? 'bg-cyan-600 text-white' : 'hover:bg-slate-800'}`}>Kontrol Merkezi</Link>
               <Link href="/admin/musteriler" onClick={closeMenu} className={`block px-4 py-3 rounded-lg font-bold ${isActive('/admin/musteriler') ? 'bg-cyan-600 text-white' : 'hover:bg-slate-800'}`}>Müşteriler</Link>
               <Link href="/admin/yeni-kayit" onClick={closeMenu} className={`block px-4 py-3 rounded-lg font-bold ${isActive('/admin/yeni-kayit') ? 'bg-cyan-600 text-white' : 'hover:bg-slate-800'}`}>+ Hızlı Kayıt</Link>
-              <Link href="/admin/ayarlar" onClick={closeMenu} className={`block px-4 py-3 rounded-lg font-bold ${isActive('/admin/ayarlar') ? 'bg-cyan-600 text-white' : 'hover:bg-slate-800'}`}>Ayarlar</Link>
               <Link href="/admin/gun-sonu" onClick={closeMenu} className={`block px-4 py-3 rounded-lg font-bold ${isActive('/admin/gun-sonu') ? 'bg-cyan-600 text-white' : 'hover:bg-slate-800'}`}>Gün Sonu</Link>
+              <Link href="/admin/ayarlar" onClick={closeMenu} className={`block px-4 py-3 rounded-lg font-bold ${isActive('/admin/ayarlar') ? 'bg-cyan-600 text-white' : 'hover:bg-slate-800'}`}>Ayarlar</Link>
+              
             </nav>
             <div className="p-4 border-t border-slate-800">
               <button onClick={handleLogout} className="w-full bg-slate-800 hover:bg-red-600 text-slate-300 hover:text-white px-4 py-3 rounded-lg font-bold">Çıkış Yap</button>
