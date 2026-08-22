@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { supabase } from '../../../utils/supabase';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { generateAndUploadPdf } from '../../../utils/pdfGenerator'; // Yollar klasör derinliğine göre değişebilir.
+import { generateAndUploadPdf } from '../../../utils/pdfGenerator'; 
 
 export default function YeniMusteriEkle() {
   const router = useRouter();
@@ -44,22 +44,16 @@ export default function YeniMusteriEkle() {
 
   // --- TELEFON MASKESİ ALGORİTMASI ---
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    // 1. Kullanıcının girdiği metinden rakam olmayan her şeyi (harf, boşluk, harf) acımasızca sil.
     let input = e.target.value.replace(/\D/g, ''); 
     
-    // Eğer tamamen silindiyse state'i boşalt ve dur.
     if (input.length === 0) {
       setCustomerData({ ...customerData, phone_number: '' });
       return;
     }
     
-    // 2. Numaranın her zaman '0' ile başlamasını zorla. Değilse kendin ekle.
     if (input[0] !== '0') input = '0' + input;
-    
-    // 3. Türk telefon numarası standardı olan 11 haneyi geçmesini fiziksel olarak engelle.
     input = input.substring(0, 11);
     
-    // 4. Parçala ve Maskele: 0(555) 123 45 67
     let formatted = '';
     if (input.length > 0) formatted += input[0];
     if (input.length > 1) formatted += `(${input.substring(1, 4)}`;
@@ -67,9 +61,9 @@ export default function YeniMusteriEkle() {
     if (input.length > 7) formatted += ` ${input.substring(7, 9)}`;
     if (input.length > 9) formatted += ` ${input.substring(9, 11)}`;
     
-    // Sonucu state'e yaz
     setCustomerData({ ...customerData, phone_number: formatted });
   };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -112,8 +106,6 @@ export default function YeniMusteriEkle() {
 
     setSuccessMsg('Adım 3/3: İlk servis kaydı işleniyor...');
 
-    
-
     // AŞAMA 3: Servis Kaydını Ekle (Cihaz ID'si ile bağla ve .select().single() ile veriyi al)
     const finalNextDate = requiresMaintenance ? serviceData.next_maintenance_date : null;
     
@@ -135,7 +127,7 @@ export default function YeniMusteriEkle() {
       return;
     }
 
-   // PDF Motoru ve WhatsApp Lojistiği (recordData, customer, device değişkenlerinin formda doğru tanımlandığından emin ol)
+   // AŞAMA 4: PDF Motoru ve WhatsApp Lojistiği
     try {
       setSuccessMsg('PDF oluşturuluyor ve müşteriye iletiliyor...');
       const publicUrl = await generateAndUploadPdf(recordData, customer, device, serviceData.description, serviceData.price);
@@ -145,21 +137,28 @@ export default function YeniMusteriEkle() {
         if (cleanPhone.startsWith('0')) cleanPhone = cleanPhone.substring(1);
         if (!cleanPhone.startsWith('90')) cleanPhone = '90' + cleanPhone;
 
+        // Güvenlik Ağı: Telefon eksikse sistemi dondurma, profiline at.
+        if (cleanPhone.length < 12) {
+           alert('İşlem Başarılı: Müşteri, cihaz ve servis kaydedildi, PDF depoya yüklendi!\n\nAncak geçerli bir telefon numarası olmadığı için WhatsApp yönlendirmesi atlandı.');
+           router.push(`/admin/musteri/${customer.id}`);
+           return; 
+        }
+
         const waMessage = `Merhaba ${customer.full_name}, VORA Teknik Servis isleminiz tamamlanmistir. Servis formunuza buradan ulasabilirsiniz: ${publicUrl}`;
         window.location.href = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(waMessage)}`;
         return; // İşlemi bitir, yönlendirmeyi WhatsApp halletsin
       }
     } catch (e) {
       console.error("PDF Motoru Hatası:", e);
+      alert("PDF Motoru Hatası, ancak veriler başarıyla kaydedildi.");
+      setLoading(false);
     }
 
-    // Her şey kusursuz çalıştıysa profiline yönlendir
+    // Her şey kusursuz çalıştıysa profiline yönlendir (WhatsApp'a gidemezse buraya düşer)
     setSuccessMsg('Tüm kayıtlar başarılı! Yönlendiriliyorsunuz...');
     router.push(`/admin/musteri/${customer.id}`);
     router.refresh();
   };
-
-  
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col items-center py-10 px-4 font-sans">
@@ -196,7 +195,7 @@ export default function YeniMusteriEkle() {
             <input 
               type="tel" 
               required
-              maxLength={16} /* 0(555) 123 45 67 tam 15 karakterdir. */
+              maxLength={16}
               className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-cyan-500 font-mono tracking-wider"
               placeholder="0(555) 123 45 67"
               value={customerData.phone_number}

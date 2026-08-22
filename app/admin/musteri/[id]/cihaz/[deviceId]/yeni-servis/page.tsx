@@ -4,11 +4,9 @@ import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { supabase } from '../../../../../../../utils/supabase';
 import Link from 'next/link';
-import jsPDF from 'jspdf';
-import autoTable from 'jspdf-autotable';
+// DİKKAT: Eski jsPDF ve autoTable silindi. VORA Motorunu import ediyoruz.
+import { generateAndUploadPdf } from '../../../../../../../utils/pdfGenerator'; 
 
-// PDF motoru standart fontlarda Türkçe karakterlerde çuvallar. Veri mühendisliğinde buna "Encoding Constraint" denir.
-// Sorunu çözmek için veriyi PDF'e basmadan önce İngilizce karakter setine indirgeyen rasyonel bir filtre:
 const tr2en = (text: string) => {
   return text
     .replace(/ğ/g, 'g').replace(/Ğ/g, 'G')
@@ -54,7 +52,7 @@ export default function YeniServisKaydi() {
 
     const bakımTarihi = isPeriodic && formData.next_maintenance_date ? formData.next_maintenance_date : null;
 
-    // 1. ADIM: VERİYİ İŞLE VE ID AL
+    // 1. ADIM: VERİYİ İŞLE VE ID AL (recordData'yı oluştur)
     const { data: recordData, error: recordError } = await supabase
       .from('service_records')
       .insert([{
@@ -74,83 +72,30 @@ export default function YeniServisKaydi() {
     }
 
     try {
-      // 2. ADIM: PDF ÇİZİM MOTORU (jsPDF)
-      const doc = new jsPDF();
-      
-      // Antet ve Başlık
-      doc.setFontSize(22);
-      doc.text("HASAN IKLIMLENDIRME - SERVIS FORMU", 14, 20);
-      
-      doc.setFontSize(10);
-      doc.text(tr2en(`Tarih: ${new Date().toLocaleDateString('tr-TR')}`), 14, 30);
-      doc.text(`Islem No: SRV-${recordData.id}`, 14, 35);
-      
-      // Müşteri ve Cihaz Tablosu
-      autoTable(doc, {
-        startY: 45,
-        head: [['Musteri Bilgileri', 'Cihaz Bilgileri']],
-        body: [
-          [
-            tr2en(`Ad Soyad: ${customer.full_name}\nTelefon: ${customer.phone_number}\nAdres: ${customer.address || 'Belirtilmemis'}`),
-            tr2en(`Marka/Model: ${device.brand} ${device.model}\nTip: ${device.device_type}\nSeri No: ${device.serial_number || 'Belirtilmemis'}`)
-          ],
-        ],
-      });
+      // 2. ADIM: VORA PDF MOTORUNU ÇAĞIR VE WHATSAPP'A GÖNDER
+      const publicUrl = await generateAndUploadPdf(recordData, customer, device, formData.description, formData.price);
 
-      // Yapılan İşlem Tablosu
-      autoTable(doc, {
-        startY: (doc as any).lastAutoTable.finalY + 10,
-        head: [['Yapilan Islem Detayi', 'Ucret (TL)']],
-        body: [
-          [tr2en(formData.description), formData.price ? `${formData.price} TL` : 'Ucretsiz'],
-        ],
-      });
+      if (publicUrl) {
+        let rawPhone = customer?.phone_number || '';
+        let cleanPhone = rawPhone.replace(/\D/g, ''); 
+        
+        if (cleanPhone.startsWith('0')) cleanPhone = cleanPhone.substring(1);
+        if (!cleanPhone.startsWith('90') && cleanPhone.length > 0) {
+          cleanPhone = '90' + cleanPhone;
+        }
 
-      // Varsa Sonraki Bakım Tarihi
-      if (bakımTarihi) {
-        doc.text(tr2en(`Planlanan Sonraki Bakim: ${new Date(bakımTarihi).toLocaleDateString('tr-TR')}`), 14, (doc as any).lastAutoTable.finalY + 15);
+        if (cleanPhone.length < 12) {
+           alert('İşlem Başarılı: Servis kaydedildi ve PDF depoya yüklendi!\n\nAncak müşterinin geçerli bir telefon numarası olmadığı için WhatsApp yönlendirmesi atlandı.');
+           router.push(`/admin/musteri/${id}`);
+           return; 
+        }
+
+        // WhatsApp mesajı ve Yönlendirme
+        const waMessage = tr2en(`Merhaba ${customer.full_name}, VORA Teknik Servis isleminiz tamamlanmistir. Servis formunuza buradan ulasabilirsiniz: `) + publicUrl;
+        const waLink = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(waMessage)}`;
+
+        window.location.href = waLink;
       }
-
-      // 3. ADIM: PDF'İ BLOB'A ÇEVİR VE SUPABASE'E YÜKLE
-      const pdfBlob = doc.output('blob');
-      const fileName = `servis_${recordData.id}_${Date.now()}.pdf`;
-
-      const { error: uploadError } = await supabase.storage
-        .from('service_pdfs')
-        .upload(fileName, pdfBlob, { contentType: 'application/pdf' });
-
-      if (uploadError) throw new Error("PDF Yüklenemedi: " + uploadError.message);
-
-      // 4. ADIM: URL'İ AL VE VERİTABANINI GÜNCELLE
-      const { data: urlData } = supabase.storage.from('service_pdfs').getPublicUrl(fileName);
-      const publicPdfUrl = urlData.publicUrl;
-
-      await supabase.from('service_records').update({ pdf_url: publicPdfUrl }).eq('id', recordData.id);
-
-     // 5. ADIM: WHATSAPP LOJİSTİĞİ
-      let rawPhone = customer?.phone_number || '';
-      let cleanPhone = rawPhone.replace(/\D/g, ''); // Sadece rakamları ayıkla
-      
-      // Başında 0 varsa temizle
-      if (cleanPhone.startsWith('0')) cleanPhone = cleanPhone.substring(1);
-      
-      // Ülke kodu 90 yoksa ekle
-      if (!cleanPhone.startsWith('90') && cleanPhone.length > 0) {
-        cleanPhone = '90' + cleanPhone;
-      }
-
-      // Türkiye'de numaralar 90 ile birlikte toplam 12 hanedir. Eğer 12'den kısaysa, numara sahte/eksiktir.
-      if (cleanPhone.length < 12) {
-         alert('İşlem Başarılı: Servis kaydedildi ve PDF depoya yüklendi!\n\nAncak müşterinin geçerli bir telefon numarası olmadığı için WhatsApp yönlendirmesi atlandı.');
-         router.push(`/admin/musteri/${id}`);
-         return; // Algoritmayı burada durdur
-      }
-
-      // Numara doğruysa WhatsApp'ı tetikle
-      const waMessage = tr2en(`Merhaba ${customer.full_name}, ${device.brand} cihazinizin servis islemi tamamlanmistir. Detayli servis formunuza ve faturaniza bu linkten ulasabilirsiniz: `) + publicPdfUrl;
-      const waLink = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(waMessage)}`;
-
-      window.location.href = waLink;
 
     } catch (err: any) {
       alert("Operasyon sırasında hata: " + err.message);

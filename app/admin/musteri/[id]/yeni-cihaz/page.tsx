@@ -4,6 +4,7 @@ import { useState, use } from 'react';
 import { supabase } from '../../../../../utils/supabase';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+// VORA PDF Motoru
 import { generateAndUploadPdf } from '../../../../../utils/pdfGenerator';
 
 export default function YeniCihazVeServisEkle({ params }: { params: Promise<{ id: string }> }) {
@@ -71,8 +72,8 @@ export default function YeniCihazVeServisEkle({ params }: { params: Promise<{ id
         price: serviceData.price ? parseFloat(serviceData.price) : null,
         next_maintenance_date: finalNextDate
       }])
-      .select() // Eksik olan parça
-      .single(); // Eksik olan parça
+      .select() 
+      .single(); 
 
     if (serviceError) {
       setError(`Servis Kayıt Hatası: ${serviceError.message}`);
@@ -95,18 +96,29 @@ export default function YeniCihazVeServisEkle({ params }: { params: Promise<{ id
         if (publicUrl) {
           let cleanPhone = customer.phone_number.replace(/\D/g, '');
           if (cleanPhone.startsWith('0')) cleanPhone = cleanPhone.substring(1);
-          if (!cleanPhone.startsWith('90')) cleanPhone = '90' + cleanPhone;
+          if (!cleanPhone.startsWith('90') && cleanPhone.length > 0) {
+            cleanPhone = '90' + cleanPhone;
+          }
+
+          // Güvenlik Ağı: Numara hatalı/eksikse çökme, uyar ve geç.
+          if (cleanPhone.length < 12) {
+             alert('İşlem Başarılı: Cihaz, servis kaydedildi ve PDF depoya yüklendi!\n\nAncak müşterinin geçerli bir telefon numarası olmadığı için WhatsApp yönlendirmesi atlandı.');
+             router.push(`/admin/musteri/${customerId}`);
+             return; 
+          }
 
           const waMessage = `Merhaba ${customer.full_name}, VORA Teknik Servis isleminiz tamamlanmistir. Servis formunuza buradan ulasabilirsiniz: ${publicUrl}`;
           window.location.href = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(waMessage)}`;
-          return;
+          return; // WhatsApp'a gittiği için işlemi burada bitir.
         }
       }
     } catch (e) {
       console.error("PDF Motoru Hatası:", e);
+      alert("PDF Motoru Hatası, ancak veriler kaydedildi.");
+      setLoading(false); // Hatada butonu kilitleme
     }
 
-    // İşlem bitince müşteri paneline geri dön
+    // Normal şartlarda WhatsApp'a gidemezse buraya düşer ve profile döner
     router.push(`/admin/musteri/${customerId}`);
     router.refresh();
   };
