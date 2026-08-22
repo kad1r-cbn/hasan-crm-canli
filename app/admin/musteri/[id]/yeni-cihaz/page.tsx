@@ -4,6 +4,7 @@ import { useState, use } from 'react';
 import { supabase } from '../../../../../utils/supabase';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { generateAndUploadPdf } from '../../../../../utils/pdfGenerator';
 
 export default function YeniCihazVeServisEkle({ params }: { params: Promise<{ id: string }> }) {
   const router = useRouter();
@@ -58,10 +59,10 @@ export default function YeniCihazVeServisEkle({ params }: { params: Promise<{ id
       return;
     }
 
-    // 2. Cihaz ID'sini al ve İlk Servisi Yaz
+    // 2. Cihaz ID'sini al ve İlk Servisi Yaz (recordData'yı oluşturuyoruz)
     const finalNextDate = requiresMaintenance ? serviceData.next_maintenance_date : null;
     
-    const { error: serviceError } = await supabase
+    const { data: recordData, error: serviceError } = await supabase
       .from('service_records')
       .insert([{
         device_id: device.id,
@@ -69,12 +70,40 @@ export default function YeniCihazVeServisEkle({ params }: { params: Promise<{ id
         description: serviceData.description,
         price: serviceData.price ? parseFloat(serviceData.price) : null,
         next_maintenance_date: finalNextDate
-      }]);
+      }])
+      .select() // Eksik olan parça
+      .single(); // Eksik olan parça
 
     if (serviceError) {
       setError(`Servis Kayıt Hatası: ${serviceError.message}`);
       setLoading(false);
       return;
+    }
+
+    // 3. Müşteri Bilgisini Veritabanından Çek (PDF ve WhatsApp'a isim/telefon lazım)
+    const { data: customer } = await supabase
+      .from('customers')
+      .select('*')
+      .eq('id', customerId)
+      .single();
+
+    // 4. PDF Motoru ve WhatsApp Lojistiği
+    try {
+      if (customer) {
+        const publicUrl = await generateAndUploadPdf(recordData, customer, device, serviceData.description, serviceData.price);
+        
+        if (publicUrl) {
+          let cleanPhone = customer.phone_number.replace(/\D/g, '');
+          if (cleanPhone.startsWith('0')) cleanPhone = cleanPhone.substring(1);
+          if (!cleanPhone.startsWith('90')) cleanPhone = '90' + cleanPhone;
+
+          const waMessage = `Merhaba ${customer.full_name}, VORA Teknik Servis isleminiz tamamlanmistir. Servis formunuza buradan ulasabilirsiniz: ${publicUrl}`;
+          window.location.href = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(waMessage)}`;
+          return;
+        }
+      }
+    } catch (e) {
+      console.error("PDF Motoru Hatası:", e);
     }
 
     // İşlem bitince müşteri paneline geri dön

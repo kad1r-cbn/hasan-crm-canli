@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { supabase } from '../../../utils/supabase';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { generateAndUploadPdf } from '../../../utils/pdfGenerator'; // Yollar klasör derinliğine göre değişebilir.
 
 export default function YeniMusteriEkle() {
   const router = useRouter();
@@ -111,10 +112,12 @@ export default function YeniMusteriEkle() {
 
     setSuccessMsg('Adım 3/3: İlk servis kaydı işleniyor...');
 
-    // AŞAMA 3: Servis Kaydını Ekle (Cihaz ID'si ile bağla)
+    
+
+    // AŞAMA 3: Servis Kaydını Ekle (Cihaz ID'si ile bağla ve .select().single() ile veriyi al)
     const finalNextDate = requiresMaintenance ? serviceData.next_maintenance_date : null;
     
-    const { error: serviceError } = await supabase
+    const { data: recordData, error: serviceError } = await supabase
       .from('service_records')
       .insert([{
         device_id: device.id,
@@ -122,7 +125,9 @@ export default function YeniMusteriEkle() {
         description: serviceData.description,
         price: serviceData.price ? parseFloat(serviceData.price) : null,
         next_maintenance_date: finalNextDate
-      }]);
+      }])
+      .select()
+      .single();
 
     if (serviceError) {
       setError(`Servis Kayıt Hatası: ${serviceError.message}`);
@@ -130,11 +135,31 @@ export default function YeniMusteriEkle() {
       return;
     }
 
+   // PDF Motoru ve WhatsApp Lojistiği (recordData, customer, device değişkenlerinin formda doğru tanımlandığından emin ol)
+    try {
+      setSuccessMsg('PDF oluşturuluyor ve müşteriye iletiliyor...');
+      const publicUrl = await generateAndUploadPdf(recordData, customer, device, serviceData.description, serviceData.price);
+      
+      if (publicUrl) {
+        let cleanPhone = customer.phone_number.replace(/\D/g, '');
+        if (cleanPhone.startsWith('0')) cleanPhone = cleanPhone.substring(1);
+        if (!cleanPhone.startsWith('90')) cleanPhone = '90' + cleanPhone;
+
+        const waMessage = `Merhaba ${customer.full_name}, VORA Teknik Servis isleminiz tamamlanmistir. Servis formunuza buradan ulasabilirsiniz: ${publicUrl}`;
+        window.location.href = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(waMessage)}`;
+        return; // İşlemi bitir, yönlendirmeyi WhatsApp halletsin
+      }
+    } catch (e) {
+      console.error("PDF Motoru Hatası:", e);
+    }
+
     // Her şey kusursuz çalıştıysa profiline yönlendir
     setSuccessMsg('Tüm kayıtlar başarılı! Yönlendiriliyorsunuz...');
     router.push(`/admin/musteri/${customer.id}`);
     router.refresh();
   };
+
+  
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col items-center py-10 px-4 font-sans">
@@ -205,7 +230,7 @@ export default function YeniMusteriEkle() {
                   <option value="VRF Tipi Klima">VRF Tipi Klima</option>
                   <option value="Salon Tipi Klima">Salon Tipi Klima</option>
                   <option value="Petek">Petek</option>
-                </select>    
+                </select>
               </div>
               <div>
                 <label className="block text-sm font-bold text-slate-700 mb-1">Marka</label>
