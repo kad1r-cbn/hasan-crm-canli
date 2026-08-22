@@ -105,6 +105,7 @@ export default async function MusteriDetay({ params }: any) {
                   <div className="flex flex-col sm:flex-row gap-3 mt-auto">
                     <Link href={`/admin/musteri/${customer.id}/cihaz/${device.id}`} className="flex-1 bg-white border border-slate-300 text-slate-700 hover:bg-slate-50 text-center px-4 py-2.5 rounded-lg text-sm font-bold transition-colors">
                       Geçmiş Kayıtlar
+                      
                     </Link>
                     <Link href={`/admin/musteri/${customer.id}/cihaz/${device.id}/yeni-servis`} className="flex-1 bg-slate-900 text-white hover:bg-slate-800 text-center px-4 py-2.5 rounded-lg text-sm font-bold transition-colors shadow-md">
                       + Yeni Servis
