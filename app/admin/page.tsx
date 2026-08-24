@@ -100,7 +100,7 @@ export default function KontrolMerkezi() {
       );
       
       // WhatsApp'ı yeni sekmede aç
-      window.open(`https://wa.me/${cleanPhone}?text=${encodeURIComponent(message)}`, '_blank');
+      window.location.href = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(message)}`;
     } else {
       alert("Veritabanı Hatası: Durum güncellenemedi.");
     }
