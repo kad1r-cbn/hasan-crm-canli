@@ -11,74 +11,250 @@ export const generateAndUploadPdf = async (recordData: any, customer: any, devic
   try {
     const doc = new jsPDF('p', 'mm', 'a4');
 
+    // El yazısı fontunu projendeki mevcut base64 değişkeninden yükle.
     doc.addFileToVFS("ElYazisi.ttf", elYazisiBase64);
     doc.addFont("ElYazisi.ttf", "ElYazisiFontum", "normal");
 
-    doc.addImage(formTemplateBase64, 'JPEG', 0, 0, 210, 297);
+    doc.addImage(formTemplateBase64, 'PNG', 0, 0, 210, 297);
 
-    // BÜYÜKLÜK VE TAŞMA DENGESİ İÇİN FONT 16'YA ÇEKİLDİ
-    doc.setFont("ElYazisiFontum", "normal");
-    doc.setFontSize(16); 
-    doc.setTextColor(15, 30, 120);
+    // ============================================================
+    // FORM KOORDİNATLARI
+    // Şablondaki kesik çizgilerin merkezleri baz alınmıştır.
+    // jsPDF koordinatları: x -> soldan, y -> üstten / mm.
+    // ============================================================
+    const POS = {
+      date: {
+        day: { x: 167.65, y: 84.00 },
+        month: { x: 177.35, y: 84.00 },
+        year: { x: 191.40, y: 84.00 }, // Şablondaki basılı "20" yazısının SAĞINDA
+      },
+      serviceNo: { x: 179.40, y: 90.00 },
 
-    // --- Sağ Üst: Servis Formu Bilgileri ---
-    // Tarihi parçalayıp matbaadaki "20" yazısını atlatıyoruz
+      customer: {
+        x: 37.10,
+        nameY: 111.30,
+        phoneY: 119.10,
+        addressY: 127.20,
+        maxWidth: 58.50,
+      },
+
+      device: {
+        typeY: 108.30,
+        typeX: {
+          Kombi: 135.90,
+          Klima: 153.80,
+          Petek: 171.60,
+        },
+        textX: 135.00,
+        brandY: 116.70,
+        serialY: 124.40,
+        maxWidth: 61.00,
+      },
+
+      issue: {
+        x: 14.00,
+        ys: [152.00, 158.60, 165.30, 172.40],
+        maxWidth: 81.50,
+      },
+
+      work: {
+        x: 109.20,
+        // Arıza Tespiti / Bakım / Parça Değişimi / Temizlik / Diğer
+        ys: {
+          ariza: 150.30,
+          bakim: 156.30,
+          parca: 162.40,
+          temizlik: 168.10,
+          diger: 174.30,
+        },
+      },
+
+      total: { x: 174.20, y: 207.00 },
+    };
+
+    const setInk = (size = 14) => {
+      doc.setFont("ElYazisiFontum", "normal");
+      doc.setFontSize(size);
+      doc.setTextColor(15, 30, 120);
+    };
+
+    // Tek satıra sığdır; taşma olursa fontu kontrollü şekilde küçült.
+    const drawFitText = (
+      value: unknown,
+      x: number,
+      y: number,
+      maxWidth: number,
+      fontSize = 14,
+      minFontSize = 10,
+      align: 'left' | 'center' = 'left'
+    ) => {
+      const text = String(value ?? '').trim();
+      if (!text) return;
+
+      let size = fontSize;
+      setInk(size);
+
+      while (doc.getTextWidth(text) > maxWidth && size > minFontSize) {
+        size -= 0.5;
+        setInk(size);
+      }
+
+      doc.text(text, x, y, { align });
+    };
+
+    // Kutunun tam ortasına küçük bir X yerleştir.
+    const drawCheckboxX = (x: number, y: number) => {
+      setInk(10.5);
+      doc.text('X', x, y, { align: 'center' });
+    };
+
+    // ------------------------------------------------------------
+    // SAĞ ÜST: TARİH + SERVİS NO
+    // ------------------------------------------------------------
     const d = new Date(recordData.service_date);
     const dd = String(d.getDate()).padStart(2, '0');
-    const mm = String(d.getMonth() + 1).padStart(2, '0');
-    const yy = String(d.getFullYear()).slice(2); // 2026'nın 26'sını alır
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const yy = String(d.getFullYear()).slice(-2); // Sadece "26"
 
-    // Y eksenleri sarkmayı önlemek için yukarı çekildi
-    doc.text(`${dd} / ${mm}`, 162, 66);
-    doc.text(yy, 185, 66); // 20 yazısının hemen sağına
-    doc.text(`SRV-${recordData.id.substring(0, 8).toUpperCase()}`, 155, 74);
+    setInk(13.5);
+    doc.text(dd, POS.date.day.x, POS.date.day.y, { align: 'center' });
+    doc.text(month, POS.date.month.x, POS.date.month.y, { align: 'center' });
+    doc.text(yy, POS.date.year.x, POS.date.year.y, { align: 'center' });
 
-    // --- Sol Orta: Müşteri Bilgileri ---
-    doc.text(customer.full_name, 40, 99);
-    doc.text(customer.phone_number, 40, 108);
-    // Adres genişliği korundu, Y ekseni düzeltildi ki aşağıya taşmasın
-    doc.text(customer.address || '-', 40, 117, { maxWidth: 65 }); 
+    // Şablondaki noktalı servis no çizgisinin tam merkezine.
+    drawFitText(
+      `SRV-${String(recordData.id ?? '').substring(0, 8).toUpperCase()}`,
+      POS.serviceNo.x,
+      POS.serviceNo.y,
+      29.50,
+      13.5,
+      10,
+      'center'
+    );
 
-    // --- Sağ Orta: Cihaz Bilgileri ---
-    doc.setFontSize(20);
-    // Kutucuk çarpıları yukarı hizalandı
-    if (device.device_type === 'Kombi') {
-      doc.text("X", 128, 99);
-    } else if (device.device_type === 'Klima' || device.device_type === 'VRF Tipi Klima' || device.device_type === 'Salon Tipi Klima') {
-      doc.text("X", 146, 99); 
-    } else if (device.device_type === 'Petek') {
-      doc.text("X", 169, 99);
+    // ------------------------------------------------------------
+    // SOL ORTA: MÜŞTERİ BİLGİLERİ
+    // ------------------------------------------------------------
+    drawFitText(
+      customer?.full_name,
+      POS.customer.x,
+      POS.customer.nameY,
+      POS.customer.maxWidth,
+      14,
+      10
+    );
+
+    drawFitText(
+      customer?.phone_number,
+      POS.customer.x,
+      POS.customer.phoneY,
+      POS.customer.maxWidth,
+      14,
+      10
+    );
+
+    drawFitText(
+      customer?.address || '-',
+      POS.customer.x,
+      POS.customer.addressY,
+      POS.customer.maxWidth,
+      13.5,
+      9.5
+    );
+
+    // ------------------------------------------------------------
+    // SAĞ ORTA: CİHAZ BİLGİLERİ
+    // ------------------------------------------------------------
+    const deviceType = String(device?.device_type || '').trim();
+
+    if (deviceType === 'Kombi') {
+      drawCheckboxX(POS.device.typeX.Kombi, POS.device.typeY);
+    } else if (
+      deviceType === 'Klima' ||
+      deviceType === 'VRF Tipi Klima' ||
+      deviceType === 'Salon Tipi Klima'
+    ) {
+      drawCheckboxX(POS.device.typeX.Klima, POS.device.typeY);
+    } else if (deviceType === 'Petek') {
+      drawCheckboxX(POS.device.typeX.Petek, POS.device.typeY);
     }
-    
-    doc.setFontSize(16);
-    // Marka ve Seri No alanları toparlandı
-    doc.text(`${device.brand} ${device.model}`, 132, 108);
-    doc.text(device.serial_number || '-', 132, 117);
 
-    // --- Sol Alt: Arıza / Talep ---
-    doc.text(description, 15, 149, { maxWidth: 85 });
+    drawFitText(
+      `${device?.brand || ''} ${device?.model || ''}`.trim(),
+      POS.device.textX,
+      POS.device.brandY,
+      POS.device.maxWidth,
+      14,
+      10
+    );
 
-    // --- Sağ Alt: Yapılan İşlemler (Bakım) ---
+    drawFitText(
+      device?.serial_number || '-',
+      POS.device.textX,
+      POS.device.serialY,
+      POS.device.maxWidth,
+      13.5,
+      9.5
+    );
+
+    // ------------------------------------------------------------
+    // SOL ALT: ARIZA / TALEP
+    // Her satır doğrudan şablondaki kesik çizginin üzerine yazılır.
+    // ------------------------------------------------------------
+    if (description) {
+      setInk(13.5);
+      const lines = doc
+        .splitTextToSize(String(description).trim(), POS.issue.maxWidth)
+        .slice(0, POS.issue.ys.length);
+
+      lines.forEach((line: string, index: number) => {
+        doc.text(line, POS.issue.x, POS.issue.ys[index]);
+      });
+    }
+
+    // ------------------------------------------------------------
+    // SAĞ ALT ORTA: YAPILAN İŞLEMLER
+    // Mevcut mantık korunuyor: next_maintenance_date varsa "Bakım" işaretlenir.
+    // ------------------------------------------------------------
     if (recordData.next_maintenance_date) {
-        doc.setFontSize(20);
-        doc.text("X", 106, 149); 
-        doc.setFontSize(16);
+      drawCheckboxX(POS.work.x, POS.work.ys.bakim);
     }
 
-    // --- Sağ Alt Orta: Ücret Bilgisi ---
-    // Toplam rakamı havada uçmasın diye çizgiye sıfırlandı
-    doc.text(price ? `${price}` : '0', 170, 204); 
+    // ------------------------------------------------------------
+    // ÜCRET BİLGİSİ: TOPLAM
+    // Şablondaki "TOPLAM" noktalı çizginin tam üzerine.
+    // ------------------------------------------------------------
+    drawFitText(
+      price ? String(price) : '0',
+      POS.total.x,
+      POS.total.y,
+      20,
+      14,
+      10,
+      'center'
+    );
 
     // PDF Kayıt işlemleri...
     const pdfBlob = doc.output('blob');
     const fileName = `vora_servis_${recordData.id}_${Date.now()}.pdf`;
 
-    const { error: uploadError } = await supabase.storage.from('service_pdfs').upload(fileName, pdfBlob, { contentType: 'application/pdf' });
-    if (uploadError) throw new Error("Yükleme hatası: " + uploadError.message);
+    const { error: uploadError } = await supabase.storage
+      .from('service_pdfs')
+      .upload(fileName, pdfBlob, { contentType: 'application/pdf' });
 
-    const { data: urlData } = supabase.storage.from('service_pdfs').getPublicUrl(fileName);
-    await supabase.from('service_records').update({ pdf_url: urlData.publicUrl }).eq('id', recordData.id);
-    
+    if (uploadError) {
+      throw new Error("Yükleme hatası: " + uploadError.message);
+    }
+
+    const { data: urlData } = supabase.storage
+      .from('service_pdfs')
+      .getPublicUrl(fileName);
+
+    await supabase
+      .from('service_records')
+      .update({ pdf_url: urlData.publicUrl })
+      .eq('id', recordData.id);
+
     return urlData.publicUrl;
   } catch (error) {
     console.error("PDF Üretim Hatası:", error);
