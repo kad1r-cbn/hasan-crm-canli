@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { supabase } from '../../../../../../../utils/supabase';
 import Link from 'next/link';
-// DİKKAT: Eski jsPDF ve autoTable silindi. VORA Motorunu import ediyoruz.
+// VORA Motoru
 import { generateAndUploadPdf } from '../../../../../../../utils/pdfGenerator'; 
 
 const tr2en = (text: string) => {
@@ -35,6 +35,15 @@ export default function YeniServisKaydi() {
   const [isPeriodic, setIsPeriodic] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // YENİ EKLENEN OPERASYONEL STATE'LER
+  const [isPartUsed, setIsPartUsed] = useState(false);
+  const [partName, setPartName] = useState('');
+  const [partQuantity, setPartQuantity] = useState('');
+  const [operationType, setOperationType] = useState('Arıza Tespiti');
+  const [operationOther, setOperationOther] = useState('');
+  const [paymentMethod, setPaymentMethod] = useState('Nakit');
+  const [technician, setTechnician] = useState('Hasan Yılmaz');
+
   useEffect(() => {
     const fetchData = async () => {
       const { data: deviceData } = await supabase.from('devices').select('*').eq('id', deviceId).single();
@@ -52,15 +61,22 @@ export default function YeniServisKaydi() {
 
     const bakımTarihi = isPeriodic && formData.next_maintenance_date ? formData.next_maintenance_date : null;
 
-    // 1. ADIM: VERİYİ İŞLE VE ID AL (recordData'yı oluştur)
+    // 1. ADIM: VERİYİ İŞLE VE ID AL (YENİ VERİLER EKLENDİ)
     const { data: recordData, error: recordError } = await supabase
       .from('service_records')
       .insert([{
         device_id: deviceId,
-        description: formData.description,
-        price: formData.price ? parseFloat(formData.price) : 0,
         service_date: new Date().toISOString(),
-        next_maintenance_date: bakımTarihi
+        description: formData.description,
+        price: formData.price ? parseFloat(formData.price) : null,
+        next_maintenance_date: bakımTarihi,
+        is_part_used: isPartUsed,
+        part_name: isPartUsed ? partName : null,
+        part_quantity: isPartUsed ? partQuantity : null,
+        operation_type: operationType,
+        operation_other_text: operationType === 'Diğer' ? operationOther : null,
+        payment_method: paymentMethod,
+        technician: technician
       }])
       .select()
       .single();
@@ -129,20 +145,79 @@ export default function YeniServisKaydi() {
           </div>
 
           <div className="mb-6">
-            <h2 className="text-lg font-bold text-slate-800 border-b border-slate-200 pb-2 mb-4">2. Yapılan İşlem</h2>
+            <h2 className="text-lg font-bold text-slate-800 border-b border-slate-200 pb-2 mb-4">2. Yapılan İşlem Detayları</h2>
             <div className="space-y-5">
+              
+              {/* YAPILAN İŞLEMLER */}
+              <div className="flex flex-col gap-2">
+                <label className="block text-sm font-bold text-slate-700 mb-1">Yapılan İşlem</label>
+                <select value={operationType} onChange={(e) => setOperationType(e.target.value)} className="p-3 border border-slate-300 rounded-lg outline-none focus:ring-2 focus:ring-cyan-500 bg-white">
+                  <option value="Arıza Tespiti">Arıza Tespiti</option>
+                  <option value="Bakım">Bakım</option>
+                  <option value="Parça Değişimi">Parça Değişimi</option>
+                  <option value="Temizlik">Temizlik</option>
+                  <option value="Diğer">Diğer</option>
+                </select>
+                {operationType === 'Diğer' && (
+                  <input type="text" placeholder="Yapılan işlemi yazın..." value={operationOther} onChange={(e) => setOperationOther(e.target.value)} className="mt-2 p-3 border border-slate-300 rounded-lg outline-none focus:ring-2 focus:ring-cyan-500" />
+                )}
+              </div>
+
               <div>
-                <label className="block text-sm font-bold text-slate-700 mb-1">İşlem Açıklaması</label>
+                <label className="block text-sm font-bold text-slate-700 mb-1">İşlem Açıklaması Detayı</label>
                 <textarea required rows={4} className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-cyan-500 outline-none text-slate-700" placeholder="Örn: Filtre değişimi yapıldı..." value={formData.description} onChange={(e) => setFormData({...formData, description: e.target.value})}></textarea>
               </div>
-              <div>
-                <label className="block text-sm font-bold text-slate-700 mb-1">Alınan Ücret (₺)</label>
-                <input type="number" className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-cyan-500 outline-none text-slate-700 font-bold" placeholder="Örn: 1500" value={formData.price} onChange={(e) => setFormData({...formData, price: e.target.value})} />
+
+              {/* KULLANILAN PARÇALAR */}
+              <div className="flex flex-col gap-2 p-4 border border-dashed border-slate-300 rounded-lg bg-white">
+                <div className="flex items-center gap-3">
+                  <label className="font-bold text-slate-700 text-sm">Parça Kullanıldı mı?</label>
+                  <label className="relative inline-flex items-center cursor-pointer">
+                    <input type="checkbox" className="sr-only peer" checked={isPartUsed} onChange={(e) => setIsPartUsed(e.target.checked)} />
+                    <div className="w-11 h-6 bg-slate-200 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-cyan-500"></div>
+                  </label>
+                </div>
+                
+                {isPartUsed && (
+                  <div className="flex gap-2 mt-2">
+                    <input type="text" placeholder="Parça Adı (Örn: Sensör)" required={isPartUsed} value={partName} onChange={(e) => setPartName(e.target.value)} className="flex-1 p-3 border border-slate-300 rounded-lg outline-none focus:ring-2 focus:ring-cyan-500" />
+                    <input type="number" placeholder="Adet" required={isPartUsed} value={partQuantity} onChange={(e) => setPartQuantity(e.target.value)} className="w-24 p-3 border border-slate-300 rounded-lg outline-none focus:ring-2 focus:ring-cyan-500" />
+                  </div>
+                )}
               </div>
+
+              {/* ÜCRET VE ÖDEME ŞEKLİ */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                <div>
+                  <label className="block text-sm font-bold text-slate-700 mb-1">Alınan Ücret (₺)</label>
+                  <input type="number" className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-cyan-500 outline-none text-slate-700 font-bold" placeholder="Örn: 1500" value={formData.price} onChange={(e) => setFormData({...formData, price: e.target.value})} />
+                </div>
+                <div className="flex flex-col gap-2">
+                  <label className="block text-sm font-bold text-slate-700 mb-1">Ödeme Şekli</label>
+                  <select value={paymentMethod} onChange={(e) => setPaymentMethod(e.target.value)} className="p-3 border border-slate-300 rounded-lg outline-none focus:ring-2 focus:ring-cyan-500 bg-white">
+                    <option value="Nakit">Nakit</option>
+                    <option value="Kart">Kart</option>
+                    <option value="Havale">Havale</option>
+                    <option value="Peşin">Peşin</option>
+                    <option value="Taksit">Taksit</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* TEKNİSYEN */}
+              <div className="flex flex-col gap-2 mt-2">
+                <label className="block text-sm font-bold text-slate-700 mb-1">Teknisyen</label>
+                <select value={technician} onChange={(e) => setTechnician(e.target.value)} className="p-3 border border-slate-300 rounded-lg outline-none focus:ring-2 focus:ring-cyan-500 bg-white">
+                  <option value="Hasan Yılmaz">Hasan Yılmaz</option>
+                  <option value="Orhan Orak">Orhan Orak</option>
+                </select>
+              </div>
+
               <div className="mt-6 flex items-start gap-3">
                 <input type="checkbox" id="periodic" checked={isPeriodic} onChange={(e) => setIsPeriodic(e.target.checked)} className="w-5 h-5 mt-0.5 text-cyan-600 rounded border-slate-300 focus:ring-cyan-500" />
                 <label htmlFor="periodic" className="text-sm font-bold text-slate-700 cursor-pointer">Bu işlem periyodik bakım takibi gerektirir</label>
               </div>
+              
               {isPeriodic && (
                 <div className="mt-4 p-4 bg-cyan-50 border border-cyan-200 rounded-xl relative animate-fade-in-down">
                   <label className="block text-sm font-bold text-cyan-800 mb-1">Sonraki Bakım Tarihi</label>
