@@ -163,7 +163,7 @@ const POS = {
 
   customer: {
 
-    name: [38, 134.3],
+    name: [38, 134.5],
 
     phone: [38, 143.3],
 
@@ -173,8 +173,8 @@ const POS = {
     */
     address: {
       x: 36.5,
-      firstY: 153.3,
-      secondY: 159.5,
+      firstY: 153.5,
+      secondY: 159.7,
       maxWidth: 70,
     },
   },
@@ -188,11 +188,11 @@ const POS = {
 
     type: {
 
-      kombi: [138.0, 133.8],
+      kombi: [138.8, 133.8],
 
-      klima: [155.0, 133.8],
+      klima: [155.8, 133.8],
 
-      petek: [173.0, 133.8],
+      petek: [173.8, 133.8],
     },
 
     brandModel: [138.0, 140.9],
@@ -219,7 +219,7 @@ const POS = {
     x: 13,
 
     lines: [
-      179.8,
+      179.6,
       186.2,
       192.7,
     ],
@@ -234,17 +234,17 @@ const POS = {
 
   operations: {
 
-    arizaTespiti: [110.5, 175.8],
+    arizaTespiti: [110.5, 176.3],
 
-    bakim: [110.5, 182.8],
+    bakim: [110.5, 183.3],
 
-    parcaDegisimi: [110.5, 189.8],
+    parcaDegisimi: [110.5, 190.3],
 
-    temizlik: [110.5, 196.8],
+    temizlik: [110.5, 197.3],
 
-    diger: [110.5, 203.8],
+    diger: [110.5, 204.3],
 
-    otherText: [119, 203.8],
+    otherText: [119, 204.3],
   },
 
 
@@ -279,7 +279,7 @@ const POS = {
       kutunun alt ayırıcı çizgisinin üzerinden taşacak şekilde
       basılıyordu. Artık noktalı çizginin hemen üstüne oturuyor.
     */
-    amount: [153.5, 222.0],
+    amount: [153.5, 222.1],
   },
 
 
@@ -291,18 +291,18 @@ const POS = {
 
     method: {
 
-      nakit: [110.5, 237.5],
+      nakit: [110.3, 237.5],
 
-      kart: [140.5, 237.5],
+      kart: [140.3, 237.5],
 
-      havale: [168.5, 237.5],
+      havale: [168.3, 237.5],
     },
 
     status: {
 
-      pesin: [140.5, 245.0],
+      pesin: [140.3, 245.0],
 
-      taksit: [168.5, 245.0],
+      taksit: [168.3, 245.0],
     },
   },
 
@@ -326,7 +326,7 @@ const POS = {
       kalıyor. Y ekseni ölçümde zaten doğruydu, değişmedi.
     */
 
-    name: [161.5, 258.5],
+    name: [161.5, 258.9],
 
     maxWidth: 32.5,
   },
