@@ -64,27 +64,13 @@ const formTemplateBase64 =
 const tr2en = (
   text: string | number | null | undefined
 ): string => {
-
-  if (
-    text === null ||
-    text === undefined
-  ) {
+  if (text === null || text === undefined) {
     return '';
   }
 
-  return String(text)
-    .replace(/ğ/g, 'g')
-    .replace(/Ğ/g, 'G')
-    .replace(/ü/g, 'u')
-    .replace(/Ü/g, 'U')
-    .replace(/ş/g, 's')
-    .replace(/Ş/g, 'S')
-    .replace(/ı/g, 'i')
-    .replace(/İ/g, 'I')
-    .replace(/ö/g, 'o')
-    .replace(/Ö/g, 'O')
-    .replace(/ç/g, 'c')
-    .replace(/Ç/g, 'C');
+  // Türkçe karakterleri koru. DejaVu Sans gömülü fontu
+  // ğ, ü, ş, ı, ö, ç, İ, Ğ, Ü, Ş, Ö, Ç karakterlerini destekler.
+  return String(text);
 };
 
 
@@ -177,9 +163,9 @@ const POS = {
 
   customer: {
 
-    name: [42, 137.8],
+    name: [42, 136.3],
 
-    phone: [42, 146.8],
+    phone: [42, 145.3],
 
     /*
       Adres artık tek bir Y koordinatı değil.
@@ -187,8 +173,8 @@ const POS = {
     */
     address: {
       x: 42,
-      firstY: 154.8,
-      secondY: 161.0,
+      firstY: 153.3,
+      secondY: 159.5,
       maxWidth: 70,
     },
   },
@@ -209,7 +195,7 @@ const POS = {
       petek: [173.5, 133.8],
     },
 
-    brandModel: [137, 142.8],
+    brandModel: [139.5, 141.3],
 
     serial: [137, 150.8],
 
@@ -248,17 +234,17 @@ const POS = {
 
   operations: {
 
-    arizaTespiti: [110.5, 171.8],
+    arizaTespiti: [110.5, 176.0],
 
-    bakim: [110.5, 178.8],
+    bakim: [110.5, 183.0],
 
-    parcaDegisimi: [110.5, 185.8],
+    parcaDegisimi: [110.5, 190.0],
 
-    temizlik: [110.5, 192.8],
+    temizlik: [110.5, 197.0],
 
-    diger: [110.5, 199.8],
+    diger: [110.5, 204.0],
 
-    otherText: [119, 199.8],
+    otherText: [119, 204.0],
   },
 
 
@@ -268,15 +254,15 @@ const POS = {
 
   parts: {
 
-    nameX: 20,
+    nameX: 21.5,
 
     quantityX: 80,
 
     rows: [
-      226.5,
-      232.0,
-      237.5,
-      243.0,
+      225.2,
+      230.7,
+      236.2,
+      241.7,
     ],
   },
 
@@ -293,7 +279,7 @@ const POS = {
       kutunun alt ayırıcı çizgisinin üzerinden taşacak şekilde
       basılıyordu. Artık noktalı çizginin hemen üstüne oturuyor.
     */
-    amount: [184, 212.6],
+    amount: [176.5, 228.5],
   },
 
 
@@ -305,18 +291,18 @@ const POS = {
 
     method: {
 
-      nakit: [110.5, 236.5],
+      nakit: [110.5, 237.7],
 
-      kart: [140.5, 236.5],
+      kart: [140.5, 237.7],
 
-      havale: [168.5, 236.5],
+      havale: [168.5, 237.7],
     },
 
     status: {
 
-      pesin: [140.5, 244.0],
+      pesin: [140.5, 245.2],
 
-      taksit: [168.5, 244.0],
+      taksit: [168.5, 245.2],
     },
   },
 
@@ -340,10 +326,58 @@ const POS = {
       kalıyor. Y ekseni ölçümde zaten doğruydu, değişmedi.
     */
 
-    name: [170, 260.0],
+    name: [167.5, 260.0],
 
-    maxWidth: 30,
+    maxWidth: 32.5,
   },
+};
+
+
+/* ============================================================
+   6. TÜRKÇE FONT
+   ============================================================ */
+
+const TURKISH_FONT_FILE = 'DejaVuSans-Bold.ttf';
+const TURKISH_FONT_NAME = 'DejaVuSans';
+
+const loadTurkishFont = async (doc: jsPDF) => {
+  // Dosyayı şu konuma koy:
+  // public/fonts/DejaVuSans-Bold.ttf
+  const response = await fetch(`/fonts/${TURKISH_FONT_FILE}`);
+
+  if (!response.ok) {
+    throw new Error(
+      `Türkçe font yüklenemedi: /fonts/${TURKISH_FONT_FILE}`
+    );
+  }
+
+  const buffer = await response.arrayBuffer();
+  const bytes = new Uint8Array(buffer);
+
+  let binary = '';
+  const chunkSize = 0x8000;
+
+  for (let i = 0; i < bytes.length; i += chunkSize) {
+    binary += String.fromCharCode(
+      ...bytes.subarray(i, i + chunkSize)
+    );
+  }
+
+  doc.addFileToVFS(
+    TURKISH_FONT_FILE,
+    btoa(binary)
+  );
+
+  doc.addFont(
+    TURKISH_FONT_FILE,
+    TURKISH_FONT_NAME,
+    'bold'
+  );
+
+  doc.setFont(
+    TURKISH_FONT_NAME,
+    'bold'
+  );
 };
 
 
@@ -357,7 +391,7 @@ const setCorporateFont = (
 ) => {
 
   doc.setFont(
-    'helvetica',
+    TURKISH_FONT_NAME,
     'bold'
   );
 
@@ -399,7 +433,7 @@ const drawFittedText = (
     startSize;
 
   doc.setFont(
-    'helvetica',
+    TURKISH_FONT_NAME,
     'bold'
   );
 
@@ -473,7 +507,7 @@ const drawCheckboxX = (
 ) => {
 
   doc.setFont(
-    'helvetica',
+    TURKISH_FONT_NAME,
     'bold'
   );
 
@@ -651,7 +685,7 @@ const drawAddress = (
 
 
   doc.setFont(
-    'helvetica',
+    TURKISH_FONT_NAME,
     'bold'
   );
 
@@ -728,7 +762,7 @@ const drawProblemDescription = (
 
 
   doc.setFont(
-    'helvetica',
+    TURKISH_FONT_NAME,
     'bold'
   );
 
@@ -850,48 +884,37 @@ const getMountingDate = (
 const normalizePayment = (
   recordData: any
 ) => {
+  let method = String(recordData?.payment_method ?? '').trim();
+  let status = String(recordData?.payment_status ?? '').trim();
 
-  let method =
-    recordData?.payment_method ??
-    '';
+  const methodKey = method.toLocaleLowerCase('tr-TR');
+  const statusKey = status.toLocaleLowerCase('tr-TR');
 
-  let status =
-    recordData?.payment_status ??
-    '';
-
-
-  /*
-   * Eski sistem:
-   *
-   * payment_method = Peşin
-   * payment_method = Taksit
-   */
-
-  if (
-    method === 'Peşin' ||
-    method === 'Pesin'
-  ) {
-
+  // Eski sistemde payment_method alanına Peşin/Taksit yazılmış olabilir.
+  if (methodKey === 'peşin' || methodKey === 'pesin') {
     status = 'Peşin';
-
     method = '';
   }
 
-
-  if (
-    method === 'Taksit'
-  ) {
-
+  if (methodKey === 'taksit') {
     status = 'Taksit';
-
     method = '';
   }
 
+  if (statusKey === 'pesin') {
+    status = 'Peşin';
+  }
 
-  return {
-    method,
-    status,
-  };
+  const normalizedMethod = method.toLocaleLowerCase('tr-TR');
+  if (normalizedMethod === 'nakit') method = 'Nakit';
+  else if (normalizedMethod === 'kart') method = 'Kart';
+  else if (normalizedMethod === 'havale') method = 'Havale';
+
+  const normalizedStatus = status.toLocaleLowerCase('tr-TR');
+  if (normalizedStatus === 'peşin' || normalizedStatus === 'pesin') status = 'Peşin';
+  else if (normalizedStatus === 'taksit') status = 'Taksit';
+
+  return { method, status };
 };
 
 
@@ -902,47 +925,15 @@ const normalizePayment = (
 const normalizeOperation = (
   operation: string
 ) => {
+  const value = String(operation ?? '')
+    .trim()
+    .toLocaleLowerCase('tr-TR');
 
-  const value =
-    tr2en(operation)
-      .trim()
-      .toLowerCase();
-
-
-  if (
-    value === 'ariza tespiti'
-  ) {
-    return 'Arıza Tespiti';
-  }
-
-
-  if (
-    value === 'bakim'
-  ) {
-    return 'Bakım';
-  }
-
-
-  if (
-    value === 'parca degisimi'
-  ) {
-    return 'Parça Değişimi';
-  }
-
-
-  if (
-    value === 'temizlik'
-  ) {
-    return 'Temizlik';
-  }
-
-
-  if (
-    value === 'diger'
-  ) {
-    return 'Diğer';
-  }
-
+  if (value === 'arıza tespiti') return 'Arıza Tespiti';
+  if (value === 'bakım') return 'Bakım';
+  if (value === 'parça değişimi') return 'Parça Değişimi';
+  if (value === 'temizlik') return 'Temizlik';
+  if (value === 'diğer') return 'Diğer';
 
   return operation;
 };
@@ -1062,6 +1053,8 @@ export const generateAndUploadPdf = async (
         'mm',
         'a4'
       );
+
+    await loadTurkishFont(doc);
 
 
     /* ========================================================
