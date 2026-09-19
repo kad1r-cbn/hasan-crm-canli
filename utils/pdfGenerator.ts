@@ -13,6 +13,34 @@ import { supabase } from './supabase';
  * PDF_DEBUG_GRID = true
  * yaparak koordinat sistemini görebilirsin.
  *
+ * ------------------------------------------------------------
+ * KALİBRASYON NOTU (bu güncellemede yapılan düzeltmeler):
+ *
+ * Üretilen bir PDF, milimetrik referans grid'i ile piksel piksel
+ * incelenerek şablon üzerindeki çizgi/nokta rehberleriyle
+ * karşılaştırıldı. Tespit edilen ve düzeltilen kaymalar:
+ *
+ *  1) service.date (gün/ay/yıl)  : y 106.2 -> 104.3
+ *     Rakamlar formdaki alt çizginin ~1.7mm ALTINA taşıyor,
+ *     çizgi rakamların ortasından geçiyordu.
+ *
+ *  2) service.serviceNo          : y 113.2 -> 111.5
+ *     Aynı sorun; metin "SERVİS NO:" etiketinin ve noktalı
+ *     çizginin ~1.7mm altında kalıyordu.
+ *
+ *  3) price.amount (ÜCRET)       : y 217.0 -> 212.6
+ *     Tutar, "ÜCRET:" satırındaki noktalı çizginin ~4mm altına,
+ *     kutunun alt ayırıcı çizgisinin üzerinden taşacak şekilde
+ *     basılıyordu.
+ *
+ *  4) technician.name            : x 155 -> 170, maxWidth 32 -> 30
+ *     EN CİDDİ HATA: isim "AD SOYAD:" etiketinin (x≈144-169mm)
+ *     ÜZERİNE yazılıyordu (ör. "AD SOYHasan Yilmaz" çakışması).
+ *     x, etiketin bitişinden sonrasına çekildi.
+ *
+ * Diğer tüm alanlar (müşteri bilgileri, cihaz marka/model, arıza
+ * açıklaması, parça tablosu, checkbox X işaretleri) ölçümlerde
+ * zaten doğru hizalı bulundu, değiştirilmedi.
  * ============================================================
  */
 
@@ -130,12 +158,16 @@ const POS = {
   service: {
 
     date: {
-      day: [166, 106.2],
-      month: [177, 106.2],
-      year: [188.5, 106.2],
+      // ESKİ: 106.2 -> YENİ: 104.3
+      // Rakamlar formun alt çizgisinin ~1.7mm altına taşıyordu.
+      day: [166, 104.3],
+      month: [177, 104.3],
+      year: [188.5, 104.3],
     },
 
-    serviceNo: [166, 113.2],
+    // ESKİ: 113.2 -> YENİ: 111.5
+    // Metin, "SERVİS NO:" etiketi ve noktalı çizginin ~1.7mm altındaydı.
+    serviceNo: [166, 111.5],
   },
 
 
@@ -256,10 +288,12 @@ const POS = {
   price: {
 
     /*
-      Önceki versiyonda 7000 üst tarafta kalıyordu.
-      Şimdi ücret çizgisine oturtuldu.
+      ESKİ: 217.0 -> YENİ: 212.6
+      Tutar, "ÜCRET:" satırındaki noktalı çizginin ~4mm altına,
+      kutunun alt ayırıcı çizgisinin üzerinden taşacak şekilde
+      basılıyordu. Artık noktalı çizginin hemen üstüne oturuyor.
     */
-    amount: [184, 217.0],
+    amount: [184, 212.6],
   },
 
 
@@ -294,16 +328,21 @@ const POS = {
   technician: {
 
     /*
-      ÖNEMLİ:
-      Önceki 127 mm çok solda kaldığı için
-      AD SOYAD yazısının üstüne geliyordu.
+      ÖNEMLİ (güncellendi):
+      x=155 iken isim, "AD SOYAD:" etiketinin (x≈144-169mm)
+      ÜZERİNE yazılıyordu (çakışma: "AD SOYHasan Yilmaz").
 
-      Artık sağdaki dotted line'ın içine giriyor.
+      ESKİ: x=155, maxWidth=32
+      YENİ: x=170, maxWidth=30
+
+      x artık etiketin bittiği noktadan sonra başlıyor ve
+      kutunun sağ kenarına (≈203mm) kadar güvenli mesafede
+      kalıyor. Y ekseni ölçümde zaten doğruydu, değişmedi.
     */
 
-    name: [155, 260.0],
+    name: [170, 260.0],
 
-    maxWidth: 32,
+    maxWidth: 30,
   },
 };
 
