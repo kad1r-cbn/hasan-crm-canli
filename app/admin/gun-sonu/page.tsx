@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { supabase } from '../../../utils/supabase';
 
 export default function GunSonuPage() {
@@ -39,12 +39,12 @@ export default function GunSonuPage() {
     const localDateStr = `${selected.getFullYear()}-${String(selected.getMonth() + 1).padStart(2, '0')}-${String(selected.getDate()).padStart(2, '0')}`;
 
     try {
-      // AŞAMA 1: Günlük Ciroyu Hesapla (Timezone'dan bağımsız string LIKE araması)
-      // Supabase'deki service_date timestamp bile olsa, o günkü tüm kayıtlar 'YYYY-MM-DD%' ile eşleşir.
+      // AŞAMA 1: Günlük Ciroyu Hesapla (METİN ARAMASI YERİNE GERÇEK TARİH SINIRLARI KULLANILDI)
       const { data: services, error: serviceError } = await supabase
         .from('service_records')
         .select('price')
-        .like('service_date', `${localDateStr}%`);
+        .gte('service_date', localDateStr)
+        .lte('service_date', `${localDateStr}T23:59:59.999`);
 
       if (serviceError) throw serviceError;
       
