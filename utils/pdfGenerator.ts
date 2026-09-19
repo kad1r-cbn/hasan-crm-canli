@@ -219,7 +219,7 @@ const POS = {
     x: 13,
 
     lines: [
-      179.4,
+      179.1,
       186.2,
       192.7,
     ],
@@ -234,17 +234,17 @@ const POS = {
 
   operations: {
 
-    arizaTespiti: [110.5, 176.8],
+    arizaTespiti: [110.5, 178.8],
 
-    bakim: [110.5, 183.3],
+    bakim: [110.5, 185.3],
 
-    parcaDegisimi: [110.5, 190.3],
+    parcaDegisimi: [110.5, 192.3],
 
-    temizlik: [110.5, 197.3],
+    temizlik: [110.5, 199.3],
 
-    diger: [110.5, 204.3],
+    diger: [110.5, 206.3],
 
-    otherText: [119, 204.3],
+    otherText: [119, 206.3],
   },
 
 
@@ -300,9 +300,9 @@ const POS = {
 
     status: {
 
-      pesin: [140.3, 245.0],
+      pesin: [140.3, 244.0],
 
-      taksit: [168.3, 245.0],
+      taksit: [168.3, 244.0],
     },
   },
 
