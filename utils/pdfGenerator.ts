@@ -163,16 +163,16 @@ const POS = {
 
   customer: {
 
-    name: [40, 133.3],
+    name: [38, 134.3],
 
-    phone: [40, 142.3],
+    phone: [38, 143.3],
 
     /*
       Adres artık tek bir Y koordinatı değil.
       İlk satır + ikinci satır şeklinde çalışıyor.
     */
     address: {
-      x: 38,
+      x: 36.5,
       firstY: 153.3,
       secondY: 159.5,
       maxWidth: 70,
@@ -188,16 +188,16 @@ const POS = {
 
     type: {
 
-      kombi: [137.5, 133.8],
+      kombi: [138.0, 133.8],
 
-      klima: [155.5, 133.8],
+      klima: [155.0, 133.8],
 
-      petek: [173.5, 133.8],
+      petek: [173.0, 133.8],
     },
 
-    brandModel: [139.5, 140.9],
+    brandModel: [138.0, 140.9],
 
-    serial: [136, 148.8],
+    serial: [138, 148.8],
 
     mountingDate: {
 
@@ -216,12 +216,12 @@ const POS = {
 
   problem: {
 
-    x: 15,
+    x: 13,
 
     lines: [
-      181.8,
-      188.2,
-      194.7,
+      179.8,
+      186.2,
+      192.7,
     ],
 
     maxWidth: 85,
@@ -234,17 +234,17 @@ const POS = {
 
   operations: {
 
-    arizaTespiti: [110.5, 175.5],
+    arizaTespiti: [110.5, 175.8],
 
-    bakim: [110.5, 182.5],
+    bakim: [110.5, 182.8],
 
-    parcaDegisimi: [110.5, 189.5],
+    parcaDegisimi: [110.5, 189.8],
 
-    temizlik: [110.5, 196.5],
+    temizlik: [110.5, 196.8],
 
-    diger: [110.5, 203.5],
+    diger: [110.5, 203.8],
 
-    otherText: [119, 203.5],
+    otherText: [119, 203.8],
   },
 
 
@@ -279,7 +279,7 @@ const POS = {
       kutunun alt ayırıcı çizgisinin üzerinden taşacak şekilde
       basılıyordu. Artık noktalı çizginin hemen üstüne oturuyor.
     */
-    amount: [151.5, 223.5],
+    amount: [153.5, 222.0],
   },
 
 
@@ -291,18 +291,18 @@ const POS = {
 
     method: {
 
-      nakit: [110.5, 237.7],
+      nakit: [110.5, 237.5],
 
-      kart: [140.5, 237.7],
+      kart: [140.5, 237.5],
 
-      havale: [168.5, 237.7],
+      havale: [168.5, 237.5],
     },
 
     status: {
 
-      pesin: [140.5, 245.2],
+      pesin: [140.5, 245.0],
 
-      taksit: [168.5, 245.2],
+      taksit: [168.5, 245.0],
     },
   },
 
@@ -326,7 +326,7 @@ const POS = {
       kalıyor. Y ekseni ölçümde zaten doğruydu, değişmedi.
     */
 
-    name: [162.5, 259.0],
+    name: [161.5, 258.5],
 
     maxWidth: 32.5,
   },
