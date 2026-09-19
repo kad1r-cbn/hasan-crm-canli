@@ -219,7 +219,7 @@ const POS = {
     x: 13,
 
     lines: [
-      179.6,
+      179.4,
       186.2,
       192.7,
     ],
@@ -234,7 +234,7 @@ const POS = {
 
   operations: {
 
-    arizaTespiti: [110.5, 176.3],
+    arizaTespiti: [110.5, 176.8],
 
     bakim: [110.5, 183.3],
 
