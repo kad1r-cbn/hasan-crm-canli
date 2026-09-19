@@ -148,12 +148,12 @@ const POS = {
       // Rakamlar formun alt çizgisinin ~1.7mm altına taşıyordu.
       day: [166, 104.3],
       month: [177, 104.3],
-      year: [188.5, 104.3],
+      year: [189.5, 104.3],
     },
 
     // ESKİ: 113.2 -> YENİ: 111.5
     // Metin, "SERVİS NO:" etiketi ve noktalı çizginin ~1.7mm altındaydı.
-    serviceNo: [166, 111.5],
+    serviceNo: [166, 111],
   },
 
 
@@ -163,9 +163,9 @@ const POS = {
 
   customer: {
 
-    name: [42, 136.3],
+    name: [40, 135.3],
 
-    phone: [42, 145.3],
+    phone: [40, 144.3],
 
     /*
       Adres artık tek bir Y koordinatı değil.
@@ -279,7 +279,7 @@ const POS = {
       kutunun alt ayırıcı çizgisinin üzerinden taşacak şekilde
       basılıyordu. Artık noktalı çizginin hemen üstüne oturuyor.
     */
-    amount: [176.5, 228.5],
+    amount: [160.5, 220.5],
   },
 
 
@@ -326,7 +326,7 @@ const POS = {
       kalıyor. Y ekseni ölçümde zaten doğruydu, değişmedi.
     */
 
-    name: [167.5, 260.0],
+    name: [162.5, 259.0],
 
     maxWidth: 32.5,
   },
