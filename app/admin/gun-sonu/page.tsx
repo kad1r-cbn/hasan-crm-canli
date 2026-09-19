@@ -35,23 +35,20 @@ export default function GunSonuPage() {
     setLoading(true);
     setMessage({ text: '', type: '' });
 
-    // Saat dilimi kaymalarını önlemek için tarihi YYYY-MM-DD formatına sabitliyoruz
+    // Saat dilimi sızıntısını önleyen yerel tarih stringi (YYYY-MM-DD)
     const localDateStr = `${selected.getFullYear()}-${String(selected.getMonth() + 1).padStart(2, '0')}-${String(selected.getDate()).padStart(2, '0')}`;
 
-    // Servisler için UTC sınırları
-    const startOfDay = new Date(selected.setHours(0, 0, 0, 0)).toISOString();
-    const endOfDay = new Date(selected.setHours(23, 59, 59, 999)).toISOString();
-
     try {
-      // AŞAMA 1: Günlük Ciroyu Hesapla
+      // AŞAMA 1: Günlük Ciroyu Hesapla (Timezone'dan bağımsız string LIKE araması)
+      // Supabase'deki service_date timestamp bile olsa, o günkü tüm kayıtlar 'YYYY-MM-DD%' ile eşleşir.
       const { data: services, error: serviceError } = await supabase
         .from('service_records')
         .select('price')
-        .gte('service_date', startOfDay)
-        .lte('service_date', endOfDay);
+        .like('service_date', `${localDateStr}%`);
 
       if (serviceError) throw serviceError;
-      const totalCiro = services.reduce((sum, record) => sum + (record.price || 0), 0);
+      
+      const totalCiro = services.reduce((sum, record) => sum + (Number(record.price) || 0), 0);
       setCiro(totalCiro);
 
       // AŞAMA 2: Bu tarihe ait daha önce kaydedilmiş bir "Gün Sonu" var mı kontrol et
@@ -143,7 +140,7 @@ export default function GunSonuPage() {
     <div className="min-h-screen bg-slate-100 p-6 font-sans flex justify-center items-start">
       <div className="w-full max-w-4xl bg-slate-900 rounded-2xl shadow-2xl border border-slate-800 overflow-hidden mt-10">
         
-       {/* Takvim Başlığı (Rasyonel Filtreleme) */}
+       {/* Takvim Başlığı */}
         <div className="flex justify-between items-center p-6 border-b border-slate-800">
           <div className="flex gap-3">
             {/* Ay Seçici */}
@@ -155,7 +152,7 @@ export default function GunSonuPage() {
               {monthNames.map((m, i) => <option key={i} value={i}>{m}</option>)}
             </select>
             
-            {/* Yıl Seçici (Geçmiş 5, Gelecek 5 Yıl) */}
+            {/* Yıl Seçici */}
             <select 
               value={currentDate.getFullYear()}
               onChange={(e) => setCurrentDate(new Date(parseInt(e.target.value), currentDate.getMonth(), 1))}
@@ -218,7 +215,7 @@ export default function GunSonuPage() {
                 <div className="text-center py-10 font-bold text-slate-500 animate-pulse">Sistem Verileri Çekiliyor...</div>
               ) : (
                 <>
-                  {/* Sistem Cirosu (Otomatik) */}
+                  {/* Sistem Cirosu */}
                   <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 flex justify-between items-center">
                     <span className="font-bold text-slate-700">Sistem Cirosu (Toplam)</span>
                     <span className="text-2xl font-extrabold text-slate-900">{ciro} ₺</span>
