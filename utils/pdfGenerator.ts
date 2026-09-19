@@ -148,7 +148,7 @@ const POS = {
       // Rakamlar formun alt çizgisinin ~1.7mm altına taşıyordu.
       day: [166, 104.3],
       month: [177, 104.3],
-      year: [189.5, 104.3],
+      year: [190.5, 104.3],
     },
 
     // ESKİ: 113.2 -> YENİ: 111.5
@@ -163,16 +163,16 @@ const POS = {
 
   customer: {
 
-    name: [40, 135.3],
+    name: [40, 133.3],
 
-    phone: [40, 144.3],
+    phone: [40, 142.3],
 
     /*
       Adres artık tek bir Y koordinatı değil.
       İlk satır + ikinci satır şeklinde çalışıyor.
     */
     address: {
-      x: 42,
+      x: 38,
       firstY: 153.3,
       secondY: 159.5,
       maxWidth: 70,
@@ -195,9 +195,9 @@ const POS = {
       petek: [173.5, 133.8],
     },
 
-    brandModel: [139.5, 141.3],
+    brandModel: [139.5, 140.9],
 
-    serial: [137, 150.8],
+    serial: [136, 148.8],
 
     mountingDate: {
 
@@ -234,17 +234,17 @@ const POS = {
 
   operations: {
 
-    arizaTespiti: [110.5, 176.0],
+    arizaTespiti: [110.5, 175.5],
 
-    bakim: [110.5, 183.0],
+    bakim: [110.5, 182.5],
 
-    parcaDegisimi: [110.5, 190.0],
+    parcaDegisimi: [110.5, 189.5],
 
-    temizlik: [110.5, 197.0],
+    temizlik: [110.5, 196.5],
 
-    diger: [110.5, 204.0],
+    diger: [110.5, 203.5],
 
-    otherText: [119, 204.0],
+    otherText: [119, 203.5],
   },
 
 
@@ -279,7 +279,7 @@ const POS = {
       kutunun alt ayırıcı çizgisinin üzerinden taşacak şekilde
       basılıyordu. Artık noktalı çizginin hemen üstüne oturuyor.
     */
-    amount: [160.5, 220.5],
+    amount: [151.5, 223.5],
   },
 
 
