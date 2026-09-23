@@ -1,0 +1,16 @@
+{
+  "name": "Vora Operasyon Merkezi",
+  "short_name": "VoraCRM",
+  "description": "Vora Teknik Servis Yönetim Paneli",
+  "start_url": "/admin",
+  "display": "standalone",
+  "background_color": "#0f172a",
+  "theme_color": "#0ea5e9",
+  "icons": [
+    {
+      "src": "/icon.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

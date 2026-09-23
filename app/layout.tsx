@@ -13,10 +13,7 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-export const metadata: Metadata = {
-  title: "CRM Panel",
-  description: "Müşteri ve Servis Yönetim Sistemi",
-};
+
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -28,3 +25,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     </html>
   );
 }
+
+export const metadata: Metadata = {
+  title: 'Vora CRM',
+  description: 'Vora Operasyon Merkezi',
+  manifest: '/manifest.json',
+};
