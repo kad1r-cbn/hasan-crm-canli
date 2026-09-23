@@ -69,6 +69,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               <Link href="/admin" onClick={closeMenu} className={`block px-4 py-3 rounded-lg font-bold ${isActive('/admin') ? 'bg-cyan-600 text-white' : 'hover:bg-slate-800'}`}>Kontrol Merkezi</Link>
               <Link href="/admin/musteriler" onClick={closeMenu} className={`block px-4 py-3 rounded-lg font-bold ${isActive('/admin/musteriler') ? 'bg-cyan-600 text-white' : 'hover:bg-slate-800'}`}>Müşteriler</Link>
               <Link href="/admin/yeni-kayit" onClick={closeMenu} className={`block px-4 py-3 rounded-lg font-bold ${isActive('/admin/yeni-kayit') ? 'bg-cyan-600 text-white' : 'hover:bg-slate-800'}`}>+ Hızlı Kayıt</Link>
+              <Link href="/admin/web-talepleri" className={`block px-4 py-3 rounded-lg font-bold transition-all ${isActive('/admin/web-talepleri') ? 'bg-cyan-600 text-white' : 'hover:bg-slate-800 hover:text-white'}`}>Web Talepleri</Link>
               <Link href="/admin/gun-sonu" onClick={closeMenu} className={`block px-4 py-3 rounded-lg font-bold ${isActive('/admin/gun-sonu') ? 'bg-cyan-600 text-white' : 'hover:bg-slate-800'}`}>Gün Sonu</Link>
               <Link href="/admin/ayarlar" onClick={closeMenu} className={`block px-4 py-3 rounded-lg font-bold ${isActive('/admin/ayarlar') ? 'bg-cyan-600 text-white' : 'hover:bg-slate-800'}`}>Ayarlar</Link>
               
