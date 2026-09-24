@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { supabase } from '../../utils/supabase';
+import NotificationBell from '../components/NotificationBell';
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -26,6 +27,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       <aside className="hidden md:flex w-64 flex-shrink-0 bg-slate-900 text-slate-300 flex-col shadow-2xl z-10">
         <div className="p-6 border-b border-slate-800">
           <h2 className="text-2xl font-extrabold text-white tracking-tight">Vora<span className="text-cyan-500">CRM</span></h2>
+              <NotificationBell />
         </div>
         <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
           <Link href="/admin" className={`block px-4 py-3 rounded-lg font-bold transition-all ${isActive('/admin') ? 'bg-cyan-600 text-white' : 'hover:bg-slate-800 hover:text-white'}`}>Kontrol Merkezi</Link>
