@@ -25,10 +25,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       
       {/* 1. MASAÜSTÜ SOL MENÜ (Mobilde gizlenir) */}
       <aside className="hidden md:flex w-64 flex-shrink-0 bg-slate-900 text-slate-300 flex-col shadow-2xl z-10">
-        <div className="p-6 border-b border-slate-800">
+        {/* RASYONEL DÜZELTME: Bu div'e flex, justify-between ve items-center eklendi */}
+        <div className="p-6 border-b border-slate-800 flex justify-between items-center">
           <h2 className="text-2xl font-extrabold text-white tracking-tight">Vora<span className="text-cyan-500">CRM</span></h2>
-              <NotificationBell />
+          <NotificationBell />
         </div>
+        
         <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
           <Link href="/admin" className={`block px-4 py-3 rounded-lg font-bold transition-all ${isActive('/admin') ? 'bg-cyan-600 text-white' : 'hover:bg-slate-800 hover:text-white'}`}>Kontrol Merkezi</Link>
           <Link href="/admin/musteriler" className={`block px-4 py-3 rounded-lg font-bold transition-all ${isActive('/admin/musteriler') ? 'bg-cyan-600 text-white' : 'hover:bg-slate-800 hover:text-white'}`}>Müşteriler</Link>
@@ -36,14 +38,14 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           <Link href="/admin/web-talepleri" className={`block px-4 py-3 rounded-lg font-bold transition-all ${isActive('/admin/web-talepleri') ? 'bg-cyan-600 text-white' : 'hover:bg-slate-800 hover:text-white'}`}>Web Talepleri</Link>
           <Link href="/admin/gun-sonu" className={`block px-4 py-3 rounded-lg font-bold transition-all ${isActive('/admin/gun-sonu') ? 'bg-cyan-600 text-white' : 'hover:bg-slate-800 hover:text-white'}`}>Gün Sonu</Link>
           <Link href="/admin/ayarlar" className={`block px-4 py-3 rounded-lg font-bold transition-all ${isActive('/admin/ayarlar') ? 'bg-cyan-600 text-white' : 'hover:bg-slate-800 hover:text-white'}`}>Ayarlar</Link>
-          
         </nav>  
+        
         <div className="p-4 border-t border-slate-800">
           <button onClick={handleLogout} className="w-full bg-slate-800 hover:bg-red-600 text-slate-300 hover:text-white px-4 py-3 rounded-lg font-bold transition-all">Çıkış Yap</button>
         </div>
       </aside>
 
-      {/* 2. MOBİL ÜST BİLGİ BARI VE HAMBURGER İKONU */}
+     {/* 2. MOBİL ÜST BİLGİ BARI VE HAMBURGER İKONU */}
       <header className="md:hidden absolute top-0 left-0 w-full bg-slate-900 text-white p-4 flex justify-between items-center shadow-md z-20">
          <div className="flex items-center">
            <button onClick={() => setIsMobileMenuOpen(true)} className="mr-4 text-slate-300 hover:text-white focus:outline-none">
@@ -51,6 +53,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
            </button>
            <h2 className="text-xl font-extrabold tracking-tight">Vora<span className="text-cyan-500">CRM</span></h2>
          </div>
+         {/* RASYONEL DÜZELTME: Zil, sol grubun içinden çıkarılıp doğrudan header'ın içine alındı. Böylece en sağa yapışacak. */}
+         <NotificationBell />
       </header>
 
       {/* 3. MOBİL KAYAR MENÜ (Overlay & Drawer) */}

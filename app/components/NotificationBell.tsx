@@ -78,7 +78,7 @@ export default function NotificationBell() {
 
       {/* AÇILIR BİLDİRİM PANELİ */}
       {isOpen && (
-        <div className="absolute right-0 mt-3 w-80 bg-white rounded-xl shadow-2xl border border-slate-200 overflow-hidden z-50">
+        <div className="absolute left-0 mt-3 w-80 bg-white rounded-xl shadow-2xl border border-slate-200 overflow-hidden z-[999]">
           <div className="bg-slate-900 p-4 flex justify-between items-center">
             <h3 className="text-white font-bold">Web Talepleri</h3>
             {unreadCount > 0 && (
