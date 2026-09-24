@@ -11,13 +11,10 @@ export default function NotificationBell() {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const router = useRouter();
 
-  // Ses motorunu yükle
   useEffect(() => {
-    // public klasörüne attığın ses dosyasının adı
     audioRef.current = new Audio('/ding.mp3'); 
   }, []);
 
-  // Sadece "Bekliyor" durumundaki talepleri çek
   const fetchPending = async () => {
     const { data } = await supabase
       .from('web_requests')
@@ -30,19 +27,17 @@ export default function NotificationBell() {
   useEffect(() => {
     fetchPending();
 
-    // GERÇEK ZAMANLI (REAL-TIME) DİNLEME MOTORU
-    const channel = supabase
-      .channel('public:web_requests')
+    // RASYONEL DÜZELTME: Kanal ismi benzersiz yapıldı ve abone olma sırası sağlama alındı
+    const channel = supabase.channel('vora_custom_bell_channel');
+
+    channel
       .on(
         'postgres_changes',
         { event: 'INSERT', schema: 'public', table: 'web_requests' },
         (payload) => {
-          // Yeni talep düştüğünde anında listeye ekle
           setPendingRequests((prev) => [payload.new, ...prev]);
-          
-          // Zili Çaldır (Tarayıcı izin verirse)
           if (audioRef.current) {
-            audioRef.current.play().catch(e => console.log("Tarayıcı otomatik sesi engelledi. Ekrana tıklamak gerekebilir."));
+            audioRef.current.play().catch(e => console.log("Tarayıcı sesi engelledi."));
           }
         }
       )
@@ -50,12 +45,12 @@ export default function NotificationBell() {
         'postgres_changes',
         { event: 'UPDATE', schema: 'public', table: 'web_requests' },
         (payload) => {
-          // Müşteriye çevrildiğinde statü değişeceği için listeyi tazele, okunanlar silinsin
           fetchPending();
         }
       )
       .subscribe();
 
+    // Bileşen ekrandan gittiğinde veya yenilendiğinde kanalı temizle (Çökmeyi engeller)
     return () => {
       supabase.removeChannel(channel);
     };
@@ -65,7 +60,6 @@ export default function NotificationBell() {
 
   return (
     <div className="relative">
-      {/* ZİL İKONU VE TURUNCU NOKTA */}
       <button 
         onClick={() => setIsOpen(!isOpen)}
         className="relative p-2 text-slate-300 hover:text-white transition-colors"
@@ -76,9 +70,8 @@ export default function NotificationBell() {
         )}
       </button>
 
-      {/* AÇILIR BİLDİRİM PANELİ */}
       {isOpen && (
-        <div className="absolute left-0 mt-3 w-80 bg-white rounded-xl shadow-2xl border border-slate-200 overflow-hidden z-[999]">
+        <div className="absolute right-0 md:left-0 mt-3 w-80 bg-white rounded-xl shadow-2xl border border-slate-200 overflow-hidden z-[999]">
           <div className="bg-slate-900 p-4 flex justify-between items-center">
             <h3 className="text-white font-bold">Web Talepleri</h3>
             {unreadCount > 0 && (
@@ -100,14 +93,11 @@ export default function NotificationBell() {
                     key={req.id} 
                     onClick={() => {
                       setIsOpen(false);
-                      // Tıklayınca doğrudan operasyon merkezine fırlat
                       router.push('/admin/web-talepleri');
                     }}
                     className="p-4 hover:bg-slate-50 cursor-pointer transition-colors relative"
                   >
-                    {/* Küçük turuncu nokta (Okunmadı işareti) */}
                     <div className="absolute left-3 top-5 w-2 h-2 bg-orange-500 rounded-full"></div>
-                    
                     <div className="pl-4">
                       <p className="text-sm font-bold text-slate-800">{req.full_name}</p>
                       <p className="text-xs text-slate-500 mt-1"><span className="font-bold">{req.device_type}</span> için acil servis kaydı bıraktı.</p>
