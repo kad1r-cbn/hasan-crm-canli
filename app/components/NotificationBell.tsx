@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { supabase } from '../utils/supabase'; // Yol senin yapına göre değişebilir
+import { supabase } from '../../utils/supabase';
 import { Bell } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
