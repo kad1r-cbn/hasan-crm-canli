@@ -27,8 +27,9 @@ export default function NotificationBell() {
   useEffect(() => {
     fetchPending();
 
-    // RASYONEL DÜZELTME: Kanal ismi benzersiz yapıldı ve abone olma sırası sağlama alındı
-    const channel = supabase.channel('vora_custom_bell_channel');
+    // RASYONEL ZIRH: Kanal adı her yüklemede benzersiz (unique) yapılarak Supabase önbellek (cache) hatası engellendi.
+    const uniqueChannelName = 'bell_channel_' + Math.random().toString(36).substring(7);
+    const channel = supabase.channel(uniqueChannelName);
 
     channel
       .on(
@@ -50,7 +51,6 @@ export default function NotificationBell() {
       )
       .subscribe();
 
-    // Bileşen ekrandan gittiğinde veya yenilendiğinde kanalı temizle (Çökmeyi engeller)
     return () => {
       supabase.removeChannel(channel);
     };
