@@ -18,7 +18,7 @@ export default function NotificationBell() {
   const fetchPending = async () => {
     const { data } = await supabase
       .from('web_requests')
-      .select('*')
+      .select('id, full_name, device_type, created_at, status')
       .eq('status', 'Bekliyor')
       .order('created_at', { ascending: false });
     if (data) setPendingRequests(data);
@@ -35,8 +35,10 @@ export default function NotificationBell() {
       .on(
         'postgres_changes',
         { event: 'INSERT', schema: 'public', table: 'web_requests' },
-        (payload) => {
-          setPendingRequests((prev) => [payload.new, ...prev]);
+        () => {
+          // Realtime payload'u bazen yalnizca ID/degisen alanlari tasiyabilir.
+          // Yetkili oturumla tam kayitlari yeniden okuyarak onizlemeyi guncelle.
+          void fetchPending();
           if (audioRef.current) {
             audioRef.current.play().catch(e => console.log("Tarayıcı sesi engelledi."));
           }
@@ -99,9 +101,14 @@ export default function NotificationBell() {
                   >
                     <div className="absolute left-3 top-5 w-2 h-2 bg-orange-500 rounded-full"></div>
                     <div className="pl-4">
-                      <p className="text-sm font-bold text-slate-800">{req.full_name}</p>
-                      <p className="text-xs text-slate-500 mt-1"><span className="font-bold">{req.device_type}</span> için acil servis kaydı bıraktı.</p>
-                      <p className="text-xs text-blue-600 mt-2 font-bold">{new Date(req.created_at).toLocaleTimeString('tr-TR')}</p>
+                      <p className="text-sm font-bold text-slate-800">{req.full_name?.trim() || 'Servis talebi'}</p>
+                      <p className="text-xs text-slate-500 mt-1"><span className="font-bold">{req.device_type?.trim() || 'Teknik servis'}</span> için servis kaydı bıraktı.</p>
+                      <p className="text-xs text-blue-600 mt-2 font-bold">{req.created_at && !Number.isNaN(new Date(req.created_at).getTime())
+                        ? new Date(req.created_at).toLocaleString('tr-TR', {
+                            day: '2-digit', month: '2-digit', year: 'numeric',
+                            hour: '2-digit', minute: '2-digit',
+                          })
+                        : 'Tarih bilgisi bekleniyor'}</p>
                     </div>
                   </div>
                 ))}
