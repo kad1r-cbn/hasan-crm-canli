@@ -1,25 +1,101 @@
+'use client';
+
+import { useEffect, useState } from 'react';
+import { useParams } from 'next/navigation';
 import { supabase } from '../../../../../../utils/supabase';
 import Link from 'next/link';
 
-export const dynamic = 'force-dynamic';
+export default function CihazGecmisi() {
+  const { id, deviceId } = useParams<{ id: string; deviceId: string }>();
+  const [device, setDevice] = useState<any>(null);
+  const [services, setServices] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
-export default async function CihazGecmisi({ params }: any) {
-  const resolvedParams = await params;
-  const { id, deviceId } = resolvedParams;
+  useEffect(() => {
+    let cancelled = false;
 
-  const { data: device } = await supabase
-    .from('devices')
-    .select('*')
-    .eq('id', deviceId)
-    .single();
+    const loadHistory = async () => {
+      setLoading(true);
+      setError('');
 
-  const { data: services } = await supabase
-    .from('service_records')
-    .select('*')
-    .eq('device_id', deviceId)
-    .order('service_date', { ascending: false });
+      try {
+        // Sunucudaki anonim istemci yerine CRM'nin tarayıcı oturumunu kullan.
+        const { data: authData, error: authError } = await supabase.auth.getUser();
+        if (authError || !authData.user) {
+          if (!cancelled) setError('Oturumunuz doğrulanamadı. Lütfen tekrar giriş yapın.');
+          return;
+        }
 
-  if (!device) return <div className="p-8 text-center text-red-600 font-bold">Cihaz bulunamadı.</div>;
+        const { data: deviceData, error: deviceError } = await supabase
+          .from('devices')
+          .select('*')
+          .eq('id', deviceId)
+          .eq('customer_id', id)
+          .maybeSingle();
+
+        if (cancelled) return;
+        if (deviceError) {
+          console.error('Cihaz geçmişi - cihaz sorgusu:', deviceError);
+          setError('Cihaz bilgileri alınamadı. Oturumunuzu ve bağlantınızı kontrol edin.');
+          return;
+        }
+        if (!deviceData) {
+          setError('Bu müşteriye bağlı cihaz bulunamadı.');
+          return;
+        }
+
+        const { data: serviceData, error: serviceError } = await supabase
+          .from('service_records')
+          .select('*')
+          .eq('device_id', deviceId)
+          .order('service_date', { ascending: false });
+
+        if (cancelled) return;
+        if (serviceError) {
+          console.error('Cihaz geçmişi - servis kayıtları sorgusu:', serviceError);
+          setError('Servis geçmişi alınamadı. Oturumunuzu ve bağlantınızı kontrol edin.');
+          return;
+        }
+
+        setDevice(deviceData);
+        setServices(serviceData ?? []);
+      } catch (cause) {
+        console.error('Cihaz geçmişi - beklenmeyen hata:', cause);
+        if (!cancelled) setError('Veriler yüklenirken beklenmeyen bir sorun oluştu.');
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    };
+
+    if (id && deviceId) {
+      void loadHistory();
+    } else {
+      setLoading(false);
+      setError('Cihaz veya müşteri bağlantısı geçersiz.');
+    }
+
+    return () => { cancelled = true; };
+  }, [id, deviceId]);
+
+  if (loading) {
+    return <div className="p-8 text-center font-bold text-slate-600" role="status">Cihaz geçmişi yükleniyor...</div>;
+  }
+
+  if (error) {
+    return (
+      <div className="mx-auto max-w-xl space-y-4 p-8 text-center" role="alert">
+        <p className="font-bold text-red-600">{error}</p>
+        <Link href={id ? `/admin/musteri/${id}` : '/admin/musteriler'} className="inline-block font-semibold text-cyan-700 hover:underline">
+          Müşteri profiline dön
+        </Link>
+      </div>
+    );
+  }
+
+  if (!device) {
+    return <div className="p-8 text-center font-bold text-red-600">Bu müşteriye bağlı cihaz bulunamadı.</div>;
+  }
 
   return (
     <div className="min-h-screen bg-slate-50 p-8 font-sans">
