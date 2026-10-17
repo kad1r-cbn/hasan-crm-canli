@@ -2,10 +2,8 @@
 
 import { useState } from 'react';
 import { supabase } from '../../utils/supabase';
-import { useRouter } from 'next/navigation';
 
 export default function Login() {
-  const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -27,7 +25,8 @@ export default function Login() {
       setLoading(false);
     } else {
       // Başarılı giriş, ana panele fırlat
-      router.push('/admin');
+      // Cookie tabanli Auth oturumu tam yazilsin; yeni sunucu istegiyle ac.
+      window.location.replace('/admin');
     }
   };
 
